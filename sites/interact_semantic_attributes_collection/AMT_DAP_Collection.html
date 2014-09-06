@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <title>AMT : Verb Property Collection</title>
+    <style type="text/css">
+        .xlink {cursor:default}
+        .hlink{cursor:help}
+    </style>
+
+    <script type="text/javascript">
+        var verbPhrases = [];
+        var firstLetter = ['A', 'B'];
+        var secondLetter = ['H', 'E', 'K', 'F'];
+        var limbNames = ['hand', 'elbow', 'foot', 'knee'];
+        var jointNames = ['head', 'shoulder', 'elbow', 'hand', 'hip', 'knee', 'foot'];
+
+        function gup(name) {
+            var regexS = "[\\?&]" + name + "=([^&#]*)";
+            var regex = new RegExp(regexS);
+            var tmpURL = window.location.href;
+            var results = regex.exec(tmpURL);
+            
+            if (results == null) {
+                return "";
+            }
+            else {
+                return results[1];
+            }
+        }
+
+        //
+        // This method decodes the query parameters that were URL-encoded
+        //
+        function decode(strToDecode) {
+            var encoded = strToDecode;
+            return unescape(encoded.replace(/\+/g, " "));
+        }
+
+        function paddedBy0String(inputNumber) {
+          return ("0" + inputNumber).slice(-2);
+        }
+
+        function valButton(btn) {
+          var cnt = -1;
+
+          for (var i=btn.length-1; i > -1; i--) {
+            if (btn[i].checked) {cnt = i; i = -1;}
+          }
+          return cnt;
+        }
+                
+        function insertTables(numTables) {
+            var num_rows = limbNames.length;
+            var num_cols = jointNames.length;
+            var width = 950;
+            var tableText = '';
+            var numPeople = firstLetter.length;
+//             var numPeople = 1;
+            var verbPhrase;
+            var tfooter = "</table>";
+            var tableID, theader, tbody, labelName;
+            var i, j, p; 
+            for ( var t = 0; t < numTables; t++) {
+            
+              sentenceTextHead = "<div align='center' id='counter' style='background-color:lightgray'><h2 style='color:black'>";
+              sentenceTextFoot = "</h2></div>";
+              verbPhrase = verbPhrases[t];
+              if ( verbPhrase[0] == '1' ) {
+                sentenceText = "<p> <font size='5' color='blue'>A</font><font size='5'>" + verbPhrase.substr(1, verbPhrase.length-2) + "<font color='green'>B</font>." + "</font>";
+              }
+              else {
+                sentenceText = "<p> <font size='5' color='green'>B</font><font size='5'>" + verbPhrase.substr(1, verbPhrase.length-2) + "<font color='blue'>A</font>." + "</font>";
+              }
+              tableText += sentenceTextHead + sentenceText + sentenceTextFoot;
+              
+              for ( p = 1; p <= 1; p++ ) {
+              
+                p1 = (p-1);
+                p2 = p%numPeople;
+                tableID = 'table'+paddedBy0String(numPeople*t+p);
+                theader = "<table id='" + tableID + "' border='1' cellpadding='5' cellspacing='0' width='" + width + "'>";
+                tbody = "";
+//                 theader += "<th style='text-align: center; vertical-align: middle;'> " + firstLetter[p1] + "'s part near " + firstLetter[p2] +  "'s part.</th>";
+                theader += "<th style='text-align: center; vertical-align: middle;'>" + "</th>";
+                for( j = 1; j <= num_cols; j++) {
+                  theader += "<th style='text-align: center; vertical-align: middle;'><font color='green'>" + firstLetter[p2] + "</font>'s " + jointNames[j-1] +"? </th>";
+                }
+
+                for( i = 0; i < num_rows; i++) {
+                  tbody += "<tr> <td style='text-align: left; vertical-align: middle;'> <b>Does <font color='blue'>" + firstLetter[p1] + "</font>'s " + limbNames[i] + " touch</b> </td>";
+                  for( j = 0; j < num_cols; j++) {
+                    labelName = paddedBy0String(t+1) + '_' + firstLetter[p1] + secondLetter[i] + '_' + (j+1);
+                    tbody += "<td style='text-align: center; vertical-align: middle;'>";
+//                     <input type="radio" name="ln_th_6-7" value="mary"/>
+                    tbody += "Yes\tNo<br>";
+                    tbody += "<input name='label_" + labelName + "' id='label_" + labelName + "_1' type='radio' value='" + 1 + "' />\t";
+                    tbody += "<input name='label_" + labelName + "' id='label_" + labelName + "_0' type='radio' value='" + 0 + "' />";
+                    tbody += "</td>"
+                  }
+                  tbody += "</tr>";
+                }
+                tableText += theader + tbody + tfooter;
+                
+                tableText += "<br>";
+                tableText += "<table border='0' cellpadding='5' cellspacing='0' width='" + width + "'>";
+                
+                tableText += "<tr>";
+                tableText += "<td style='text-align: left; vertical-align: middle;'>";
+                tableText += "Is A looking at B?";
+                tableText += "</td>";
+                tableText += "<td style='text-align: left; vertical-align: middle;'>";
+                tableText += "  <input name='gaze_" + paddedBy0String(t+1) + "_1" + "' id='gaze_" + paddedBy0String(t+1) + "_1" + "' type='radio' value='" + 1 + "' />Yes";
+                tableText += "\t<input name='gaze_" + paddedBy0String(t+1) + "_1" + "' id='gaze_" + paddedBy0String(t+1) + "_0" + "' type='radio' value='" + 0 + "' />No";
+                tableText += "</td>";
+                tableText += "</tr>";
+                
+                tableText += "<tr>";
+                tableText += "<td style='text-align: left; vertical-align: middle;'>";
+                tableText += "What is A's gender?";
+                tableText += "</td>";
+                tableText += "<td style='text-align: left; vertical-align: middle;'>";
+                tableText += "  <input name='gend_" + paddedBy0String(t+1) + "_1" + "' id='gend_" + paddedBy0String(t+1) + "_1" + "' type='radio' value='" + 1 + "' />Female";
+                tableText += "\t<input name='gend_" + paddedBy0String(t+1) + "_1" + "' id='gend_" + paddedBy0String(t+1) + "_0" + "' type='radio' value='" + 0 + "' />Male";
+                tableText += "</td>";
+                tableText += "</tr>";                
+                
+                tableText += "<tr>";
+                tableText += "<td style='text-align: left; vertical-align: middle;'>";
+                tableText += "What is A's facial expression?";
+                tableText += "</td>";
+                tableText += "<td style='text-align: left; vertical-align: middle;'>";
+                tableText += "  <input name='expr_" + paddedBy0String(t+1) + "_1" + "' id='expr_" + paddedBy0String(t+1) + "_1" + "' type='radio' value='" + 1 + "' />Neutral";
+                tableText += "\t<input name='expr_" + paddedBy0String(t+1) + "_1" + "' id='expr_" + paddedBy0String(t+1) + "_2" + "' type='radio' value='" + 2 + "' />Happy";
+                tableText += "\t<input name='expr_" + paddedBy0String(t+1) + "_1" + "' id='expr_" + paddedBy0String(t+1) + "_3" + "' type='radio' value='" + 3 + "' />Shocked";
+                tableText += "\t<input name='expr_" + paddedBy0String(t+1) + "_1" + "' id='expr_" + paddedBy0String(t+1) + "_4" + "' type='radio' value='" + 4 + "' />Scared";
+                tableText += "\t<input name='expr_" + paddedBy0String(t+1) + "_1" + "' id='expr_" + paddedBy0String(t+1) + "_5" + "' type='radio' value='" + 5 + "' />Sad";
+                tableText += "\t<input name='expr_" + paddedBy0String(t+1) + "_1" + "' id='expr_" + paddedBy0String(t+1) + "_6" + "' type='radio' value='" + 6 + "' />Disgusted";
+                tableText += "\t<input name='expr_" + paddedBy0String(t+1) + "_1" + "' id='expr_" + paddedBy0String(t+1) + "_7" + "' type='radio' value='" + 7 + "' />Angry";
+                tableText += "</td>";
+                tableText += "</tr>";
+                tableText += "</table>";
+              }
+            }
+            document.getElementById('tables').innerHTML = tableText;
+            
+        }
+                
+        function init() {
+
+          var done = false; //MH load the sents from input
+          var i = 1;
+          var mturkForm = document.forms['mturk_form'];
+          document.getElementById('comment_title').style.display = "inline";
+          document.getElementById('comment').style.display = "inline";
+          startInterface = 1;
+          
+          var idName;
+          
+          while (done == false) {
+            var name = 'vp' + i;
+            var tempSent =  decode(gup(name));
+            if ( tempSent == "") {
+                done  = true;
+            }
+            else {
+              verbPhrases.push(tempSent);
+//               console.log("Sentence " + i + ": " + tempSent);
+              // Dynamically add 'inputs' to MTurk form
+              // Makes each pose result in separate column :)
+              var idNameSent = 'in_' + paddedBy0String(i) + '_vp';
+//               console.log('form: ' + idNameSent);
+              var input = document.createElement('input');
+              input.type = 'hidden';
+              input.id = idNameSent;
+              input.name = idNameSent;
+              input.value = tempSent;
+              mturkForm.appendChild(input);
+              
+              idName = 'out_' + paddedBy0String(i) + '_gaze1';
+//               console.log('form: ' + idName);
+              var input = document.createElement('input');
+              input.type = 'hidden';
+              input.id = idName;
+              input.name = idName;
+              input.value = '';
+              mturkForm.appendChild(input);
+              
+              idName = 'out_' + paddedBy0String(i) + '_gend1';
+//               console.log('form: ' + idName);
+              var input = document.createElement('input');
+              input.type = 'hidden';
+              input.id = idName;
+              input.name = idName;
+              input.value = '';
+              mturkForm.appendChild(input);
+              
+              idName = 'out_' + paddedBy0String(i) + '_expr1';
+//               console.log('form: ' + idName);
+              var input = document.createElement('input');
+              input.type = 'hidden';
+              input.id = idName;
+              input.name = idName;
+              input.value = '';
+              mturkForm.appendChild(input);
+              
+              for (var j = 0; j < (firstLetter.length-1); j++) {
+                for (var k = 0; k < secondLetter.length; k++) {
+                  var idName = 'out_' + paddedBy0String(i) + '_' + firstLetter[j] + secondLetter[k];
+                  var input = document.createElement('input');
+                  input.type = 'hidden';
+                  input.id = idName;
+                  input.name = idName;
+                  input.value = '';
+                  mturkForm.appendChild(input);
+                }
+              }
+            }
+            i+=1;
+          }
+          NUM_SCENES_TO_COMPLETE = verbPhrases.length;
+//           console.log(NUM_SCENES_TO_COMPLETE);
+          insertTables(NUM_SCENES_TO_COMPLETE);
+        }
+        
+        function valButtonBinary(btn) {
+          var cnt = -1;
+          for (var i=btn.length-1; i > -1; i--) {
+            if (btn[i].checked) {cnt = i; i = -1;}
+          }
+          // Yes/no question...
+          if ( cnt > -1 ) {
+            return (cnt+1)%2;
+          } 
+          else {
+            return cnt;
+          }
+        }
+        
+        function valButton(btn) {
+          var cnt = -1;
+          for (var i=btn.length-1; i > -1; i--) {
+            if (btn[i].checked) {cnt = i; i = -1;}
+          }
+          return cnt;
+        }
+        
+        function submitResults() {
+          
+          numPeople = firstLetter.length;
+          num_rows = limbNames.length;
+          num_cols = jointNames.length;
+          var idName = '';
+          var idValue = '';
+          var x = 0;
+          var labelName = '';
+          var t, p, i, j;
+          var radBtns, whichRadBtn;
+          for ( t = 1; t <= NUM_SCENES_TO_COMPLETE; t++) {                  
+            for ( p = 1; p <= 1; p++ ) {
+            
+              p1 = (p-1);
+              p2 = p%numPeople;
+
+              for( i = 0; i < num_rows; i++) {
+                idName = 'out_' + paddedBy0String(t) + '_' + firstLetter[p1] + secondLetter[i];
+//                   console.log(idName);
+                idValue = '';
+                for( j = 0; j < num_cols; j++) {
+                  labelName = 'label_' + paddedBy0String(t) + '_' + firstLetter[p1] + secondLetter[i] + '_' + (j+1);
+                  radBtns = document.getElementsByName(labelName);
+                  whichRadBtn = valButtonBinary(radBtns);
+                  if ( whichRadBtn > -1 ) {
+//                     console.log('Rad:' + whichRadBtn);
+                    if ( whichRadBtn > 0 ) {
+                      idValue += (j+1) + ',';
+                    }
+                  }
+                  else {
+//                     console.log("Alert: " + t + "," + p + "," + i + "," + j );
+                    alert("Some touches do not have a response. Please double-check to make sure that the tables are completely filled.");
+                    return;
+                  }
+                }
+                
+                idValue = idValue.substring(0, idValue.length - 1);
+                document.getElementById(idName).value = idValue;
+//                 console.log('idval: '+idValue);
+                  
+              }
+            }
+            
+            radBtns = document.getElementsByName('gaze_' + paddedBy0String(t) + '_1');
+            whichRadBtn = valButtonBinary(radBtns);
+            if ( whichRadBtn > -1 ) {
+              idName = 'out_' + paddedBy0String(t) + '_gaze1';
+              document.getElementById(idName).value = whichRadBtn;
+            }
+            else {
+              alert("Some gazes do not have a response. Please double-check to make sure that the questions are answered.");
+              return;
+            }
+            
+            radBtns = document.getElementsByName('gend_' + paddedBy0String(t) + '_1');
+            whichRadBtn = valButtonBinary(radBtns);
+            if ( whichRadBtn > -1 ) {
+              idName = 'out_' + paddedBy0String(t) + '_gend1';
+              document.getElementById(idName).value = whichRadBtn;
+            }
+            else {
+              alert("Some genders do not have a response. Please double-check to make sure that the questions are answered.");
+              return;
+            }
+
+            radBtns = document.getElementsByName('expr_' + paddedBy0String(t) + '_1');
+            whichRadBtn = valButton(radBtns);
+            if ( whichRadBtn > -1 ) {
+              idName = 'out_' + paddedBy0String(t) + '_expr1';
+              document.getElementById(idName).value = whichRadBtn+1;
+            }
+            else {
+              alert("Some expressions do not have a response. Please double-check to make sure that the questions are answered.");
+              return;
+            }
+          }
+          
+          document.getElementById('HITComment').value = document.getElementById('comment').value.replace(/(\r\n|\n|\r)/gm, "  ");
+          document.getElementById('mturk_form').submit();
+        }
+
+    // end of javascript
+    </script>
+
+    <style type="text/css"></style><style type="text/css"></style>
+  </head>
+  <body onload="init();">
+    <div align="center" id="header1"><h2 style="color:black">Help us characterize interactions between people!</h2></div>
+<!--     <div align="left" id="header2"><h4 style="color:red">Note: These HITs only have 1 person in the images, unlike the other HITs. <br> Note: You can now change the gender of the person.</h4></div> -->
+    <div align="left" id="instructions" style="text-align: left; vertical-align: middle; margin-left:15%; margin-right:15%" style="color:black" > 
+        <p>      
+          Below we will show you a series of sentences.
+          Each sentence describes a specific interaction between two people.
+          Please tell us what properties this interaction has.
+          For instance, if Person A is dancing with Person B, do you expect Person A's hand to be touching Person B's shoulder?
+          What facial expression would A have?
+          What if Person B is running after Person A?
+        <p>
+          For each sentence, there will be one table with possible properties such as "Person A's hand is touching Person B's shoulder."
+          There are also three additional properties: gaze (i.e., is A looking at B?), gender, and facial expression.
+          For each of these properties, please tell us what you would <font color='red'>expect</font>.
+          We understand that a sentence can have many specific interactions, e.g., there are many different ways in which two people can be dancing together.
+          <font color='red'>Please think of the most canonical pose or photograph depicting this interaction, or what you would expect in most cases, when providing your responses.</font>
+        <p>
+          <font color='red'>Note: Please pay attention to who A and B are in the sentences, as they will change across HITs.</font>
+        <p>
+          Thanks for your great work!
+    </div>
+
+    <div align="center" style="margin-left:0%" id="tables" width="1000"></div>
+    <div align="center">
+        <table width="1000"> 
+            <tbody><tr align="center"><td>
+                <form id="mturk_form" method="POST" action="https://www.mturk.com/mturk/externalSubmit">
+                    <input type="hidden" id="assignmentId" name="assignmentId" value="">
+                    <input type="hidden" id="HITComment" name="comments" value="">
+                    <br><br>
+                    <div id="comment_title" style="display:none"><p>Comments are welcome!</p> </div>
+                    <p><textarea type="hidden" id="comment" rows="3" cols="40" style="display:none"></textarea></p>
+                    <input id="submitButton" type="button" name="Submit" value="Done" onclick="submitResults()">
+                </form>
+            </td></tr></tbody>
+        </table>
+    </div>
+
+    <script type="text/javascript">
+      document.getElementById('assignmentId').value = gup('assignmentId');
+      //
+      // Check if the worker is PREVIEWING the HIT or if they've ACCEPTED the HIT
+      //
+      if (gup('assignmentId') == "ASSIGNMENT_ID_NOT_AVAILABLE") {
+          // If we're previewing, disable the button and give it a helpful message
+          document.getElementById('submitButton').disabled = true;
+          document.getElementById('submitButton').value = "You must ACCEPT the HIT before you can start the real task.";
+      } else {
+          var form = document.getElementById('mturk_form');
+          if (document.referrer && (document.referrer.indexOf('workersandbox') != -1)) {
+              form.action = "https://workersandbox.mturk.com/mturk/externalSubmit";
+          }
+      }
+    </script>
+  </body>
+</html>

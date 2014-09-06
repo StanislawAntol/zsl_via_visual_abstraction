@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html><!--
+        
+        Javascript/HTML for creating scenes from clip art. 
+            Uses "Canvas 2D" only (works on the latest IE, firefox, opera, safari browsers
+            
+        Author : Larry Zitnick
+        Email me at : larryz at microsoft dot com
+        
+        Help was provided by Subhransu Maji's code for image segmentation:
+        http://www.cs.berkeley.edu/~smaji/mturk/segmentation/aeroplane.html
+    -->
+        <head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+        <title>AMT : Clipart Illustrations</title>
+        <style type="text/css">
+            .xlink {cursor:default}
+            .hlink{cursor:help}
+        </style>
+        <!--[if IE]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
+        <script type="text/javascript">
+
+            // Various variables setting up the appearence of the interface
+            var CANVAS_WIDTH = 500;
+            var CANVAS_HEIGHT = 400;
+            var CANVAS_ROW = 20;
+            var CANVAS_COL = 20;
+            var OPTIONS_WIDTH = 600;
+            var OPTIONS_HEIGHT = 400;
+            var OPTIONS_ROW = 65;
+            var OPTIONS_COL = CANVAS_WIDTH + 50;
+            var OPTIONS_BUFFER = 15;
+            // Number of clipart to show of the children
+            // Button size
+            var NOT_USED = -10000;
+            var NUM_SCENES_TO_COMPLETE = 3;
+            var currentScene = 0;
+            var buttonSize = 68;
+            var flipRow = CANVAS_ROW + 52;
+            var flipCol = 250;
+            var genderRow = CANVAS_ROW + 52;
+            var offsetCol = 10+OPTIONS_BUFFER + CANVAS_COL + CANVAS_WIDTH + OPTIONS_BUFFER;
+            var expressionRow = CANVAS_ROW + 245;
+            
+            var wasOnCanvas = false;
+
+            var selectedImgXOffset = -10;
+            var selectedImgYOffset = -12;
+            var selectedImgXScale  = 1.23;
+            var selectedImgYScale  = 1.2;
+            
+            var imgManHairXOffset = -5;
+            var imgManHairYOffset = -22;
+            var imgManHairXScale  = 1.0;
+            var imgManHairYScale  = 0.85;
+                
+            var imgWomanHairXOffset = -14;
+            var imgWomanHairYOffset = -17;
+            var imgWomanHairXScale  = 1.35;
+            var imgWomanHairYScale  = 1.18;
+            
+            var x0PoseMan = [];
+            var y0PoseMan = [];
+            var x1PoseMan = [];
+            var y1PoseMan = [];
+            
+            var x0PoseWoman = [];
+            var y0PoseWoman = [];
+            var x1PoseWoman = [];
+            var y1PoseWoman = [];
+            
+            // Each 
+            var imgPoseManNameY = [];  // man with Yellow/blonde hair
+            imgPoseManNameY.push('PaperMan01TorsoClothed0.png');
+            imgPoseManNameY.push('PaperMan01RightSleeveClothed0.png');
+            imgPoseManNameY.push('PaperMan01LeftSleeveClothed0.png');
+            imgPoseManNameY.push('PaperMan01RightArmBottom0.png');
+            imgPoseManNameY.push('PaperMan01LeftArmBottom0.png');
+            imgPoseManNameY.push('PaperMan01RightHand0.png');
+            imgPoseManNameY.push('PaperMan01LeftHand0.png');
+            imgPoseManNameY.push('PaperMan01RightThighClothed0.png');
+            imgPoseManNameY.push('PaperMan01LeftThighClothed0.png');
+            imgPoseManNameY.push('PaperMan01RightCalfClothed0.png');
+            imgPoseManNameY.push('PaperMan01LeftCalfClothed0.png');
+            imgPoseManNameY.push('PaperMan01RightFoot0.png');
+            imgPoseManNameY.push('PaperMan01LeftFoot0.png');
+            imgPoseManNameY.push('NeutralMan0104.png');
+            imgPoseManNameY.push('HairMens0103.png');
+            
+            var imgPoseManNameB = []; // man with Brown hair
+            imgPoseManNameB.push('PaperMan01TorsoClothed0.png');
+            imgPoseManNameB.push('PaperMan01RightSleeveClothed0.png');
+            imgPoseManNameB.push('PaperMan01LeftSleeveClothed0.png');
+            imgPoseManNameB.push('PaperMan01RightArmBottom0.png');
+            imgPoseManNameB.push('PaperMan01LeftArmBottom0.png');
+            imgPoseManNameB.push('PaperMan01RightHand0.png');
+            imgPoseManNameB.push('PaperMan01LeftHand0.png');
+            imgPoseManNameB.push('PaperMan01RightThighClothed0.png');
+            imgPoseManNameB.push('PaperMan01LeftThighClothed0.png');
+            imgPoseManNameB.push('PaperMan01RightCalfClothed0.png');
+            imgPoseManNameB.push('PaperMan01LeftCalfClothed0.png');
+            imgPoseManNameB.push('PaperMan01RightFoot0.png');
+            imgPoseManNameB.push('PaperMan01LeftFoot0.png');
+            imgPoseManNameB.push('NeutralMan0104.png');
+            imgPoseManNameB.push('HairMens0101.png');
+
+            var imgExpressionManName = [];
+            imgExpressionManName.push('NeutralMan0104.png');
+            imgExpressionManName.push('HappyMan0104.png');
+            imgExpressionManName.push('ShockedMan0104.png');
+            imgExpressionManName.push('ScaredMan0104.png');
+            imgExpressionManName.push('SadMan0104.png');
+            imgExpressionManName.push('DisgustedMan0104.png');
+            imgExpressionManName.push('AngryMan0104.png');
+            
+            var imgPoseWomanNameY = []; // woman with Yellow/blonde hair
+            imgPoseWomanNameY.push('PaperWoman01TorsoClothed0.png');
+            imgPoseWomanNameY.push('PaperWoman01RightSleeveClothed0.png');
+            imgPoseWomanNameY.push('PaperWoman01LeftSleeveClothed0.png');
+            imgPoseWomanNameY.push('PaperWoman01RightArmBottom0.png');
+            imgPoseWomanNameY.push('PaperWoman01LeftArmBottom0.png');
+            imgPoseWomanNameY.push('PaperWoman01RightHand0.png');
+            imgPoseWomanNameY.push('PaperWoman01LeftHand0.png');
+            imgPoseWomanNameY.push('PaperWoman01RightThighClothed0.png');
+            imgPoseWomanNameY.push('PaperWoman01LeftThighClothed0.png');
+            imgPoseWomanNameY.push('PaperWoman01RightCalfClothed0.png');
+            imgPoseWomanNameY.push('PaperWoman01LeftCalfClothed0.png');
+            imgPoseWomanNameY.push('PaperWoman01RightFoot0.png');
+            imgPoseWomanNameY.push('PaperWoman01LeftFoot0.png');
+            imgPoseWomanNameY.push('NeutralWoman0104.png');
+            imgPoseWomanNameY.push('WomensHair0401.png');
+            
+            var imgPoseWomanNameB = []; // woman with Brown hair
+            imgPoseWomanNameB.push('PaperWoman01TorsoClothed0.png');
+            imgPoseWomanNameB.push('PaperWoman01RightSleeveClothed0.png');
+            imgPoseWomanNameB.push('PaperWoman01LeftSleeveClothed0.png');
+            imgPoseWomanNameB.push('PaperWoman01RightArmBottom0.png');
+            imgPoseWomanNameB.push('PaperWoman01LeftArmBottom0.png');
+            imgPoseWomanNameB.push('PaperWoman01RightHand0.png');
+            imgPoseWomanNameB.push('PaperWoman01LeftHand0.png');
+            imgPoseWomanNameB.push('PaperWoman01RightThighClothed0.png');
+            imgPoseWomanNameB.push('PaperWoman01LeftThighClothed0.png');
+            imgPoseWomanNameB.push('PaperWoman01RightCalfClothed0.png');
+            imgPoseWomanNameB.push('PaperWoman01LeftCalfClothed0.png');
+            imgPoseWomanNameB.push('PaperWoman01RightFoot0.png');
+            imgPoseWomanNameB.push('PaperWoman01LeftFoot0.png');
+            imgPoseWomanNameB.push('NeutralWoman0104.png');
+            imgPoseWomanNameB.push('WomensHair0403.png');
+
+            var imgExpressionWomanName = [];
+            imgExpressionWomanName.push('NeutralWoman0104.png');
+            imgExpressionWomanName.push('HappyWoman0104.png');
+            imgExpressionWomanName.push('ShockedWoman0104.png');
+            imgExpressionWomanName.push('ScaredWoman0104.png');
+            imgExpressionWomanName.push('SadWoman0104.png');
+            imgExpressionWomanName.push('DisgustedWoman0104.png');
+            imgExpressionWomanName.push('AngryWoman0104.png');
+
+            var imgPersonAHairXOffset;
+            var imgPersonAHairYOffset;
+            var imgPersonAHairXScale;
+            var imgPersonAHairYScale;
+            var imgExpressionPersonA;
+            var imgPosePersonA;
+            var xPosePersonA = [];
+            var x00PoseDefPersonA = 0;
+            var yPosePersonA = [];
+            var y00PoseDefPersonA = 0;
+            var x0PosePersonA = [];
+            var y0PosePersonA = [];
+            var x1PosePersonA = [];
+            var y1PosePersonA = [];
+            var rPosePersonA = [];
+            var rPoseDefPersonA = [];
+            var r1PosePersonA = [];
+            var r1PoseDefPersonA = [];
+            
+            var imgPersonBHairXOffset;
+            var imgPersonBHairYOffset;
+            var imgPersonBHairXScale;
+            var imgPersonBHairYScale;
+            var imgPosePersonB;
+            var imgExpressionPersonB;
+            var xPosePersonB = [];
+            var x00PoseDefPersonB = 0;
+            var yPosePersonB = [];
+            var y00PoseDefPersonB = 0;
+            var x0PosePersonB = [];
+            var y0PosePersonB = [];
+            var x1PosePersonB = [];
+            var y1PosePersonB = [];
+            var rPosePersonB = [];
+            var rPoseDefPersonB = [];
+            var r1PosePersonB = [];
+            var r1PoseDefPersonB = [];
+            
+            var personAPoseMoved = [];
+            var personAGenderDefault  = 0;
+            var personAGenderChangeNum = 0;
+            var personAFlipDefault  = 0;
+            var personAFlipChangeNum = 0;
+            var personAExpressionDefault = 0;
+            var personAExpressionChangeNum = 0;
+            
+            var personBPoseMoved = [];
+            var personBGenderDefault  = 0;
+            var personBGenderChangeNum = 0;
+            var personBFlipDefault  = 0;
+            var personBFlipChangeNum = 0;
+            var personBExpressionDefault = 0;
+            var personBExpressionChangeNum = 0;
+
+            var parentMap = [];
+            var selectMap = [];
+
+            var i, j;
+            var img;
+            var selectedImg;
+            var bgImg;
+            var canvas_fix;
+            var ctx;
+            var image_name;
+            var imgPoseManY = [];
+            var imgPoseManB = [];
+            var imgPoseWomanY = [];
+            var imgPoseWomanB = [];
+            var imgExpressionMan = [];
+            var imgExpressionWoman = [];
+            var selectedIdx = NOT_USED;
+            var personSelected = NOT_USED;
+            var buttonSelected = NOT_USED;
+            var personAExpression = 0;
+            var personBExpression = 0;
+            var personAGender = 0;
+            var personAFlip = 1;
+            var personBGender = 1;
+            var personBFlip = 0;
+            var moveClipart = false;
+            var mouse_offset_X = 0;
+            var mouse_offset_Y = 0;
+            var clickX;
+            var clickY;
+            var prevX;
+            var prevY;
+            var prevR;
+            var renderOrder = [];
+            var personScale = 0.4;
+            var numPoseClipart = 15;
+            var numExpressionClipart = 7;
+            var headIdx = 13;
+            var hairIdx = 14;
+            var imgs = new Array(); //MH
+            // String to return to AMT
+            var resultAMT = "";
+            var resultPosesStrs = new Array();
+            var resultPosesDiff = new Array();
+            var gotInitDefaults = 0;
+            
+            var setTimer = 0;
+            var dispMode = 2;
+            var startInterface = 0;
+            
+            // Allow to move to next sentence parameters
+            var poseMovedThreshold = 12;
+            var minPartsToChange   = 7;
+            
+            // Initializing parameters
+            var xRightSideInit = 900;
+            var yRightSideInit = 300;
+            var xLeftSideInit  = 300;
+            var yLeftSideInit  = 320;
+            var xPosMaxDisp    = 151;
+            var yPosMaxDisp    = 151;
+
+            var base_URL = './pngs/';
+            var base_img_URL = 'https://filebox.ece.vt.edu/~santol/cvmlp/pose_clipart/data/output/image_collection/full_exp_1/foundImgs/';
+
+            //current location
+            var cx = 0;
+            var cy = 0;
+
+            var buttonW = 0;
+            var buttonH = 0;
+            
+            function gup(name) {
+                var regexS = "[\\?&]" + name + "=([^&#]*)";
+                var regex = new RegExp(regexS);
+                var tmpURL = window.location.href;
+                var results = regex.exec(tmpURL);
+                
+                if (results == null) {
+                    return "";
+                }
+                else {
+                    return results[1];
+                }
+            }
+            
+            //
+            // This method decodes the query parameters that were URL-encoded
+            //
+            function decode(strToDecode) {
+                var encoded = strToDecode;
+                return unescape(encoded.replace(/\+/g, " "));
+            }
+            
+            function paddedBy0String(inputNumber) {
+              return ("0" + inputNumber).slice(-2);
+            }
+            
+            function valButton(btn) {
+              var cnt = -1;
+
+              for (var i=btn.length-1; i > -1; i--) {
+                if (btn[i].checked) {cnt = i; i = -1;}
+              }
+              return cnt;
+            }
+            
+            // what to submit to AMT server
+            function convertCurPosesToStr() {
+            
+                var curStr = ',';
+                
+                curStr = curStr + 'PAgendDef'    + ',' + personAGenderDefault + ',';
+                curStr = curStr + 'PAgendChange' + ',' + personAGenderChangeNum + ',';
+                curStr = curStr + 'PAgend'       + ',' + personAGender + ',';
+                curStr = curStr + 'PAflipDef'    + ',' + personAFlipDefault + ',';
+                curStr = curStr + 'PAflipChange' + ',' + personAFlipChangeNum + ',';
+                curStr = curStr + 'PAflip'       + ',' + personAFlip + ',';
+                curStr = curStr + 'PAexpDef'     + ',' + personAExpressionDefault + ',';
+                curStr = curStr + 'PAexpChange'  + ',' + personAExpressionChangeNum + ',';
+                curStr = curStr + 'PAexp'        + ',' + personAExpression + ',';
+                
+                curStr = curStr + 'PAx00D' + ',' + x00PoseDefPersonA + ',';
+                curStr = curStr + 'PAy00D' + ',' + y00PoseDefPersonA + ',';
+                
+                for(var i =0; i<xPosePersonA.length ; i++){
+                    curStr = curStr + 'PAxP' + i + ',' +xPosePersonA[i] +',';
+                }
+                for(var i =0; i<yPosePersonA.length ; i++){
+                    curStr = curStr + 'PAyP' + i + ',' +yPosePersonA[i] +',';
+                }
+                for(var i =0; i<rPosePersonA.length ; i++){
+                    curStr = curStr + 'PArP' + i + ',' +rPosePersonA[i] +',';
+                }
+                
+                for(var i =0; i<r1PoseDefPersonA.length ; i++){
+                    curStr = curStr + 'PArD' + i + ',' + r1PoseDefPersonA[i] +',';
+                }
+                
+                for(var i =0; i<r1PosePersonA.length ; i++){
+                    curStr = curStr + 'PAsP' + i + ',' +r1PosePersonA[i] +',';
+                }
+                
+                curStr = curStr + 'PBgendDef'    + ',' + personBGenderDefault + ',';
+                curStr = curStr + 'PBgendChange' + ',' + personBGenderChangeNum + ',';
+                curStr = curStr + 'PBgend'       + ',' + personBGender + ',';
+                curStr = curStr + 'PBflipDef'    + ',' + personBFlipDefault + ',';
+                curStr = curStr + 'PBflipChange' + ',' + personBFlipChangeNum + ',';                
+                curStr = curStr + 'PBflip'       + ',' + personBFlip + ',';
+                curStr = curStr + 'PBexpDef'     + ',' + personBExpressionDefault + ',';
+                curStr = curStr + 'PBexpChange'  + ',' + personBExpressionChangeNum + ',';
+                curStr = curStr + 'PBexp'        + ',' + personBExpression + ',';
+                
+                curStr = curStr + 'PBx00D' + ',' + x00PoseDefPersonB + ',';
+                curStr = curStr + 'PBy00D' + ',' + y00PoseDefPersonB + ',';
+                
+                for(var i =0; i<xPosePersonB.length ; i++){
+                    curStr = curStr + 'PBxP' + i + ',' +xPosePersonB[i] +',';
+                }
+                for(var i =0; i<yPosePersonB.length ; i++){
+                    curStr = curStr + 'PByP' + i + ',' +yPosePersonB[i] +',';
+                }
+                for(var i =0; i<rPosePersonB.length ; i++){
+                    curStr = curStr + 'PBrP' + i + ',' +rPosePersonB[i] +',';
+                }
+                
+                for(var i =0; i<r1PoseDefPersonB.length ; i++){
+                    curStr = curStr + 'PBrD' + i + ',' +r1PoseDefPersonB[i] +',';
+                }
+                
+                for(var i =0; i<r1PosePersonB.length ; i++){
+                    curStr = curStr + 'PBsP' + i + ',' +r1PosePersonB[i] +',';
+                }
+                
+                return curStr;
+            }
+            
+            function getNumChanges() {
+
+                var numChanges = 0;
+                
+                if (personAGenderChangeNum > 0)
+                    numChanges++;
+                if (personBGenderChangeNum > 0)
+                    numChanges++;
+                    
+                if (personAFlipChangeNum > 0)
+                    numChanges++;
+                if (personBFlipChangeNum > 0)
+                    numChanges++;
+                
+                if (personAExpressionChangeNum > 0)
+                    numChanges++;
+                if (personBExpressionChangeNum > 0)
+                    numChanges++;
+                
+                for (i = 0; i < numPoseClipart; i++) {
+                
+                    if (personAPoseMoved[i] > poseMovedThreshold) {
+                        numChanges++;
+                    }
+                    if (personBPoseMoved[i] > poseMovedThreshold) {
+                        numChanges++;
+                    }
+                }
+                return numChanges;
+            }
+
+            // top level initialization of the canvas
+            function init() {
+              document.getElementById('nextButton').type = "hidden";
+              document.getElementById('showButton').type = "hidden";
+              document.getElementById('howHardDiv').style.display = "none";
+            
+              var done = false; //MH load the sents from input
+              var i = 1;
+              var mturkForm = document.forms['mturk_form'];
+              
+              while(done == false){
+                  var name = 'img' + i;
+                  var tempImg =  decode(gup(name));
+                  if( tempImg == ""){
+                      done  = true;
+                  }
+                  else{
+                      imgs.push(tempImg);
+                      console.log("Image " + i + ": " + tempImg);
+                      // Dynamically add 'inputs' to MTurk form
+                      // Makes each pose result in separate column :)
+                      var idNameStr  = 'res_' + paddedBy0String(i) + '_poses';
+                      var idNameDiff = 'res_' + paddedBy0String(i) + '_difficulty';
+                      var input1 = document.createElement('input');
+                      input1.type = 'hidden';
+                      input1.id = idNameStr;
+                      input1.name = idNameStr;
+                      input1.value = '';
+                      mturkForm.appendChild(input1);
+                      var input2 = document.createElement('input');
+                      input2.type = 'hidden';
+                      input2.id = idNameDiff;
+                      input2.name = idNameDiff;
+                      input2.value = '';
+                      mturkForm.appendChild(input2);
+                  }
+                  i+=1;
+                  NUM_SCENES_TO_COMPLETE = imgs.length;
+              }
+              dispMode = 2;
+              document.getElementById('howHardDiv').style.display = "none";
+              
+              for (i = 0; i < numPoseClipart; i++) {
+                  xPosePersonA.push(0);
+                  yPosePersonA.push(0);
+                  x0PosePersonA.push(0);
+                  y0PosePersonA.push(0);
+                  x1PosePersonA.push(0);
+                  y1PosePersonA.push(0);
+                  rPosePersonA.push(0);
+                  rPoseDefPersonA.push(0);
+                  r1PosePersonA.push(Math.random()*3.0 - 1.5);
+                  r1PoseDefPersonA.push(r1PosePersonA[i]);
+                  personAPoseMoved.push(0);
+
+                  xPosePersonB.push(0);
+                  yPosePersonB.push(0);
+                  x0PosePersonB.push(0);
+                  y0PosePersonB.push(0);
+                  x1PosePersonB.push(0);
+                  y1PosePersonB.push(0);
+                  rPosePersonB.push(0);
+                  rPoseDefPersonB.push(0);
+                  r1PosePersonB.push(Math.random() * 3.0 - 1.5);       
+                  r1PoseDefPersonB.push(r1PosePersonA[i]);
+                  personBPoseMoved.push(0);
+
+                  parentMap.push(0);
+                  selectMap.push(0);
+                }
+                renderOrder.push(0);
+                renderOrder.push(13);
+                renderOrder.push(14);
+                renderOrder.push(7);
+                renderOrder.push(9);
+                renderOrder.push(11);
+                renderOrder.push(8);
+                renderOrder.push(10);
+                renderOrder.push(12);
+                renderOrder.push(1);
+                renderOrder.push(3);
+                renderOrder.push(5);
+                renderOrder.push(2);
+                renderOrder.push(4);
+                renderOrder.push(6);
+                
+                parentMap[0] = -1;
+                parentMap[1] = 0;
+                parentMap[2] = 0;
+                parentMap[3] = 1;
+                parentMap[4] = 2;
+                parentMap[5] = 3;
+                parentMap[6] = 4;
+                parentMap[7] = 0;
+                parentMap[8] = 0;
+                parentMap[9] = 7;
+                parentMap[10] = 8;
+                parentMap[11] = 9;
+                parentMap[12] = 10;
+                parentMap[13] = 0;
+                parentMap[14] = 13;
+
+                selectMap[0] = 0;
+                selectMap[1] = 1;
+                selectMap[2] = 2;
+                selectMap[3] = 3;
+                selectMap[4] = 4;
+                selectMap[5] = 3;
+                selectMap[6] = 4;
+                selectMap[7] = 7;
+                selectMap[8] = 8;
+                selectMap[9] = 9;
+                selectMap[10] = 10;
+                selectMap[11] = 9;
+                selectMap[12] = 10;
+                selectMap[13] = 13;
+                selectMap[14] = 13;
+                
+                x1PoseMan[0] = 57;
+                y1PoseMan[0] = 128;
+                x1PoseMan[1] = 26;
+                y1PoseMan[1] = 19;
+                x1PoseMan[2] = 13;
+                y1PoseMan[2] = 17;
+                x1PoseMan[3] = 14;
+                y1PoseMan[3] = 10;
+                x1PoseMan[4] = 14;
+                y1PoseMan[4] = 9;
+                x1PoseMan[5] = 16;
+                y1PoseMan[5] = 12;
+                x1PoseMan[6] = 26;
+                y1PoseMan[6] = 12;
+                x1PoseMan[7] = 33;
+                y1PoseMan[7] = 24;
+                x1PoseMan[8] = 34;
+                y1PoseMan[8] = 24;
+                x1PoseMan[9] = 19;
+                y1PoseMan[9] = 20;
+                x1PoseMan[10] = 22;
+                y1PoseMan[10] = 20;
+                x1PoseMan[11] = 42;
+                y1PoseMan[11] = 21;
+                x1PoseMan[12] = 42;
+                y1PoseMan[12] = 21;
+                x1PoseMan[13] = 48;//73;
+                y1PoseMan[13] = 102;//122;
+                x1PoseMan[14] = 59;
+                y1PoseMan[14] = 45;
+
+                x0PoseMan[0] = 0;
+                y0PoseMan[0] = 0;
+                x0PoseMan[1] = 16;
+                y0PoseMan[1] = 46;
+                x0PoseMan[2] = 96;
+                y0PoseMan[2] = 44;
+                x0PoseMan[3] = 24;
+                y0PoseMan[3] = 128;
+                x0PoseMan[4] = 16;
+                y0PoseMan[4] = 128;
+                x0PoseMan[5] = 19;
+                y0PoseMan[5] = 98;
+                x0PoseMan[6] = 21;
+                y0PoseMan[6] = 99;
+                x0PoseMan[7] = 34;
+                y0PoseMan[7] = 213;
+                x0PoseMan[8] = 80;
+                y0PoseMan[8] = 213;
+                x0PoseMan[9] = 28;
+                y0PoseMan[9] = 160;
+                x0PoseMan[10] = 39;
+                y0PoseMan[10] = 165;
+                x0PoseMan[11] = 20;
+                y0PoseMan[11] = 147;
+                x0PoseMan[12] = 19;
+                y0PoseMan[12] = 149;
+                x0PoseMan[13] = 54;
+                y0PoseMan[13] = 12;
+                x0PoseMan[14] = 43;
+                y0PoseMan[14] = 17;
+
+                x1PoseWoman[0] = 56;
+                y1PoseWoman[0] = 118;
+                x1PoseWoman[1] = 21;
+                y1PoseWoman[1] = 17;
+                x1PoseWoman[2] = 18;
+                y1PoseWoman[2] = 17;
+                x1PoseWoman[3] = 12;
+                y1PoseWoman[3] = 17;
+                x1PoseWoman[4] = 10;
+                y1PoseWoman[4] = 16;
+                x1PoseWoman[5] = 14;
+                y1PoseWoman[5] = 11;
+                x1PoseWoman[6] = 18;
+                y1PoseWoman[6] = 10;
+                x1PoseWoman[7] = 25;
+                y1PoseWoman[7] = 18;
+                x1PoseWoman[8] = 23;
+                y1PoseWoman[8] = 18;
+                x1PoseWoman[9] = 16;
+                y1PoseWoman[9] = 20;
+                x1PoseWoman[10] = 15;
+                y1PoseWoman[10] = 20;
+                x1PoseWoman[11] = 28;
+                y1PoseWoman[11] = 17;
+                x1PoseWoman[12] = 28;
+                y1PoseWoman[12] = 17;
+                x1PoseWoman[13] = 48;//73;
+                y1PoseWoman[13] = 102;//122
+                x1PoseWoman[14] = 62;
+                y1PoseWoman[14] = 51;
+
+                x0PoseWoman[0] = 0;
+                y0PoseWoman[0] = 0;
+                x0PoseWoman[1] = 16;
+                y0PoseWoman[1] = 46;
+                x0PoseWoman[2] = 94;
+                y0PoseWoman[2] = 46;
+                x0PoseWoman[3] = 18;
+                y0PoseWoman[3] = 113;
+                x0PoseWoman[4] = 20;
+                y0PoseWoman[4] = 111;
+                x0PoseWoman[5] = 17;
+                y0PoseWoman[5] = 85;
+                x0PoseWoman[6] = 16;
+                y0PoseWoman[6] = 84;
+                x0PoseWoman[7] = 24;
+                y0PoseWoman[7] = 185;
+                x0PoseWoman[8] = 84;
+                y0PoseWoman[8] = 185;
+                x0PoseWoman[9] = 24;
+                y0PoseWoman[9] = 158;
+                x0PoseWoman[10] = 29;
+                y0PoseWoman[10] = 158;
+                x0PoseWoman[11] = 21;
+                y0PoseWoman[11] = 127;
+                x0PoseWoman[12] = 20;
+                y0PoseWoman[12] = 130;
+                x0PoseWoman[13] = 58;
+                y0PoseWoman[13] = 9;
+                x0PoseWoman[14] = 35;
+                y0PoseWoman[14] = 23;
+                
+                resetScene();
+                draw_canvas();
+            }
+            
+            function goToTask() {
+              document.getElementById("header1").innerHTML = "";
+              document.getElementById("header2").innerHTML = "";
+              document.getElementById("instructions").innerHTML = "";
+              document.getElementById('taskDiv').style.display = "none";
+              
+              canvas_fix = document.getElementById("scene_canvas");
+              ctx = canvas_fix.getContext("2d");
+              canvas_fix.onmousemove = null;
+              canvas_fix.onmousedown = null;
+              canvas_fix.onmouseup = null;
+              
+              startInterface = 1;
+              dispMode = 0;
+              resetScene();
+              draw_canvas();
+            }
+
+            function startIntf() {
+              canvas_fix = document.getElementById("scene_canvas");
+              ctx = canvas_fix.getContext("2d");
+              canvas_fix.onmousemove = mousemove_canvas;
+              canvas_fix.onmousedown = mousedown_canvas;
+              canvas_fix.onmouseup = mouseup_canvas;
+
+              dispMode = 1;
+              resetScene();
+              draw_canvas();
+            }
+            
+            function switchToClipart() {
+                dispMode = 2;
+                resetScene();
+                draw_canvas();
+            }
+            
+            // grab the results and submit to the server
+            function next() {
+            
+                var numChanges = getNumChanges();
+                
+                console.log ( 'numChanges: ' + numChanges );
+                
+//                 if (0) {
+                if (numChanges < minPartsToChange) {
+                    alert("We haven't detected enough changes in the people. Please change the people more. Thanks!");
+                    return;
+                }
+                
+                var radioForm = document.getElementById("radio_form");
+                var whichRadButton = valButton(radioForm.group1);
+                if (  whichRadButton == -1 ) {
+                  alert("Please select a difficulty rating. Thanks!");
+                  return;
+                }
+                else {
+                  radioForm.group1[whichRadButton].checked = false;
+                }
+                
+                resultPosesStrs[currentScene] = convertCurPosesToStr();
+                resultPosesDiff[currentScene] = radioForm.group1[whichRadButton].value;
+                currentScene++;
+                
+                if (currentScene === NUM_SCENES_TO_COMPLETE) {
+                    document.getElementById('submitButton').type = "button";
+                    document.getElementById('nextButton').type = "hidden";
+                    document.getElementById('howHardDiv').style.display = "none";
+                    document.getElementById('comment').style.display = "inline";
+                    document.getElementById('comment_title').style.display = "inline";
+                    
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);                    
+                    ctx.clearRect(0, 0, canvas_fix.width, canvas_fix.height);
+                    ctx.fillStyle="#000000";
+                    ctx.fill();
+                    
+                    canvas_fix.onmousemove = null;
+                    canvas_fix.onmousedown = null;
+                    canvas_fix.onmouseup   = null;
+
+                    document.getElementById('canvas').style="display: none";
+                }
+                else {
+                    dispMode = 0;
+                    resetScene();
+                    draw_canvas();
+                }
+            }
+
+            // grab the results and submit to the server
+            function submitResults() {
+                var idName = '';
+                for (i = 1; i <= NUM_SCENES_TO_COMPLETE; i++) {
+                  idNameStr  = 'res_' + paddedBy0String(i) + '_poses';
+                  idNameDiff = 'res_' + paddedBy0String(i) + '_difficulty';
+                  document.getElementById(idNameStr).value = resultPosesStrs[i-1];
+                  document.getElementById(idNameDiff).value = resultPosesDiff[i-1];
+                  console.log( "PosesStr: " + document.getElementById(idNameStr).value );
+                  console.log( "Difficulty: " + document.getElementById(idNameDiff).value );
+                }
+                document.getElementById('HITComment').value = document.getElementById('comment').value.replace(/(\r\n|\n|\r)/gm, "  ");
+                console.log( "User comment: " + document.getElementById('HITComment').value );
+                document.getElementById('mturk_form').submit();
+            }
+
+            function resetScene() {
+                var temp = currentScene+1;
+                
+                if ( dispMode == 0 ) {
+                  document.getElementById('counter').innerHTML = "<h2 style=\"color:black\"> Press 'Show Image' when you are ready to see an image.</h2>";
+                  document.getElementById('howHardDiv').style.display = "none";
+                  document.getElementById('nextButton').type = "hidden";
+                  document.getElementById('showButton').type = "button";
+                  img = new Image();
+                  img.src = base_URL + 'background_img_sub.png';
+                  img.onload = draw_canvas;
+                  
+                  canvas_fix.onmousemove = null;
+                  canvas_fix.onmousedown = null;
+                  canvas_fix.onmouseup   = null;
+                }
+                else if ( dispMode == 1 ) {
+                  document.getElementById('counter').innerHTML = "<h2 style=\"color:black\">Image " + temp + "/" + NUM_SCENES_TO_COMPLETE + "</h2>";
+                  document.getElementById('nextButton').type = "hidden";
+                  document.getElementById('showButton').type = "hidden";
+                  
+                  img = new Image();
+                  img.src = base_img_URL + imgs[currentScene];
+                  img.onload = draw_canvas_timer;
+                  
+                  canvas_fix.onmousemove = null;
+                  canvas_fix.onmousedown = null;
+                  canvas_fix.onmouseup   = null;
+                }
+                else {
+                  if ( startInterface == 0 ) {
+                    document.getElementById('howHardDiv').style.display = "none";
+                    document.getElementById('nextButton').type = "hidden";
+                  }
+                  else {
+                    document.getElementById('howHardDiv').style.display = "inline";
+                    document.getElementById('nextButton').type = "button";
+                  }
+                  img = new Image();
+                  img.src = base_URL + 'background_plain.png';
+                  canvas_fix = document.getElementById("scene_canvas");
+                  ctx = canvas_fix.getContext("2d");
+                  canvas_fix.onmousemove = mousemove_canvas;
+                  canvas_fix.onmousedown = mousedown_canvas;
+                  canvas_fix.onmouseup = mouseup_canvas;
+
+                  selectedImg = new Image();
+                  selectedImg.src = base_URL + 'selected.png';
+                  bgImg = new Image();
+                  bgImg.src = base_URL + 'GenderFlipExpressionBG.png';
+
+                  img.onload = draw_canvas;
+                  bgImg.onload = draw_canvas;
+                  selectedImg.onload = draw_canvas;
+                  
+                  selectedIdx = NOT_USED;
+                  moveClipart = false;
+                  mouse_offset_X = 0;
+                  mouse_offset_Y = 0;
+
+                  if (Math.random() > 0.5)
+                      personAGender = 0;
+                  else
+                      personAGender = 1;
+
+                  if (Math.random() > 0.5)
+                      personBGender = 0;
+                  else
+                      personBGender = 1;
+                  
+                  if (Math.random() > 0.5)
+                      personAFlip = 0;
+                  else
+                      personAFlip = 1;
+
+                  if (Math.random() > 0.5)
+                      personBFlip = 0;
+                  else
+                      personBFlip = 1;
+                      
+                  personAExpression =  Math.floor(Math.random()*numExpressionClipart);
+                  personBExpression =  Math.floor(Math.random()*numExpressionClipart);
+                      
+                  if ( personAGender == 0 ) {
+                    imgPersonAHairXOffset = imgManHairXOffset;
+                    imgPersonAHairYOffset = imgManHairYOffset;
+                    imgPersonAHairXScale = imgManHairXScale;
+                    imgPersonAHairYScale = imgManHairYScale;
+                    imgExpressionPersonA = imgExpressionMan;
+                    imgPosePersonA = imgPoseManY;
+                    
+                    x0PosePersonA = x0PoseMan;
+                    x1PosePersonA = x1PoseMan;
+                    y0PosePersonA = y0PoseMan;
+                    y1PosePersonA = y1PoseMan;
+                  }
+                  else {
+                    imgPersonAHairXOffset = imgWomanHairXOffset;
+                    imgPersonAHairYOffset = imgWomanHairYOffset;
+                    imgPersonAHairXScale = imgWomanHairXScale;
+                    imgPersonAHairYScale = imgWomanHairYScale;
+                    imgExpressionPersonA = imgExpressionWoman;
+                    imgPosePersonA = imgPoseWomanY;
+                    
+                    x0PosePersonA = x0PoseWoman;
+                    x1PosePersonA = x1PoseWoman;
+                    y0PosePersonA = y0PoseWoman;
+                    y1PosePersonA = y1PoseWoman;
+                  }
+                      
+                  if ( personBGender == 0 ) {
+                    imgPersonBHairXOffset = imgManHairXOffset;
+                    imgPersonBHairYOffset = imgManHairYOffset;
+                    imgPersonBHairXScale = imgManHairXScale;
+                    imgPersonBHairYScale = imgManHairYScale;
+                    imgExpressionPersonB = imgExpressionMan;
+                    imgPosePersonB = imgPoseManB;
+                    
+                    x0PosePersonB = x0PoseMan;
+                    x1PosePersonB = x1PoseMan;
+                    y0PosePersonB = y0PoseMan;
+                    y1PosePersonB = y1PoseMan;
+                  }
+                  else {
+                    imgPersonBHairXOffset = imgWomanHairXOffset;
+                    imgPersonBHairYOffset = imgWomanHairYOffset;
+                    imgPersonBHairXScale = imgWomanHairXScale;
+                    imgPersonBHairYScale = imgWomanHairYScale;
+                    imgExpressionPersonB = imgExpressionWoman; 
+                    imgPosePersonB = imgPoseWomanB;
+                    
+                    x0PosePersonB = x0PoseWoman;
+                    x1PosePersonB = x1PoseWoman;
+                    y0PosePersonB = y0PoseWoman;
+                    y1PosePersonB = y1PoseWoman;
+                  }
+
+                  for (i = 0; i < numPoseClipart; i++) {
+                      r1PosePersonA[i]   = (Math.random()*3.0 - 1.5);
+                      r1PosePersonB[i] = (Math.random() * 3.0 - 1.5);
+                      personAPoseMoved[i] = 0;
+                      personBPoseMoved[i] = 0;
+                  }
+                  
+                  r1PosePersonA[0] = 0.0;
+                  r1PosePersonA[headIdx] = 0.0;
+                  r1PosePersonA[hairIdx] = 0.0;
+                  r1PosePersonA[5] = 0.0;
+                  r1PosePersonA[6] = 0.0;
+                  r1PosePersonA[11] = 0.0;
+                  r1PosePersonA[12] = 0.0;
+                  
+                  r1PosePersonB[0] = 0.0;
+                  r1PosePersonB[headIdx] = 0.0;
+                  r1PosePersonB[hairIdx] = 0.0;
+                  r1PosePersonB[5] = 0.0;
+                  r1PosePersonB[6] = 0.0;
+                  r1PosePersonB[11] = 0.0;
+                  r1PosePersonB[12] = 0.0;
+
+                  var xRightSide = xRightSideInit;
+                  var yRightSide = yRightSideInit;
+                  var xLeftSide  = xLeftSideInit;
+                  var yLeftSide  = yLeftSideInit;
+                  
+                  if (Math.random() > 0.5)
+                      xRightSide += Math.floor(Math.random()*xPosMaxDisp);
+                  else
+                      xRightSide -= Math.floor(Math.random()*xPosMaxDisp);
+                      
+                  if (Math.random() > 0.5)
+                      yRightSide += Math.floor(Math.random()*yPosMaxDisp);
+                  else
+                      yRightSide -= Math.floor(Math.random()*yPosMaxDisp);
+                      
+                  if (Math.random() > 0.5)
+                      xLeftSide += Math.floor(Math.random()*xPosMaxDisp);
+                  else
+                      xLeftSide -= Math.floor(Math.random()*xPosMaxDisp);
+
+                  if (Math.random() > 0.5)
+                      yLeftSide += Math.floor(Math.random()*yPosMaxDisp);
+                  else
+                      yLeftSide -= Math.floor(Math.random()*yPosMaxDisp);
+                  
+                  if (Math.random() > 0.5) {
+                      xPosePersonA[0] = xLeftSide;
+                      yPosePersonA[0] = yLeftSide;
+
+                      xPosePersonB[0] = xRightSide;
+                      yPosePersonB[0] = yRightSide;
+                  } else {
+                      xPosePersonA[0] = xRightSide;
+                      yPosePersonA[0] = yRightSide;
+
+                      xPosePersonB[0] = xLeftSide;
+                      yPosePersonB[0] = yLeftSide;
+                  }
+                  
+                  // Store all initial values (to verify that the user did something)
+
+                  personAGenderDefault = personAGender;
+                  personAGenderChangeNum = 0;
+                  personAFlipDefault = personAFlip;
+                  personAFlipChangeNum = 0;
+                  personAExpressionDefault = personAExpression;
+                  personAExpressionChangeNum = 0;
+                  
+                  personBGenderDefault = personBGender;
+                  personBGenderChangeNum = 0;
+                  personBFlipDefault = personBFlip;
+                  personBFlipChangeNum = 0;
+                  personBExpressionDefault = personBExpression;
+                  personBExpressionChangeNum = 0;
+                  
+                  // Initial body center position (only this and joint angles needed)
+                  x00PoseDefPersonA = xPosePersonA[0];
+                  y00PoseDefPersonA = yPosePersonA[0];
+
+                  x00PoseDefPersonB = xPosePersonB[0];
+                  y00PoseDefPersonB = yPosePersonB[0];
+                  
+                  for (i = 0; i < numPoseClipart; i++) {
+                      rPoseDefPersonA[i] = r1PosePersonA[i];
+                      rPoseDefPersonB[i] = r1PosePersonB[i];
+                      r1PoseDefPersonA[i] = r1PosePersonA[i];
+                      r1PoseDefPersonB[i] = r1PosePersonB[i];
+                  }
+                  
+                  if(currentScene == 0 ){ //MH
+                      // Load the clip art images
+                      for (i = 0; i < numPoseClipart; i++) {
+                          var clipartImgY = new Image();
+                          clipartImgY.src = base_URL + imgPoseManNameY[i];
+                          imgPoseManY.push(clipartImgY);
+                          var clipartImgB = new Image();
+                          clipartImgB.src = base_URL + imgPoseManNameB[i];
+                          imgPoseManB.push(clipartImgB);
+                      }
+
+                      // Update the canvas once the images are loaded
+                      for (i = 0; i < numPoseClipart; i++) {
+                          imgPoseManY[i].onload = draw_canvas;
+                          imgPoseManB[i].onload = draw_canvas;
+                      }
+
+                      // Load the clip art images
+                      for (i = 0; i < numExpressionClipart; i++) {
+                          var clipartImg = new Image();
+                          clipartImg.src = base_URL + imgExpressionManName[i];
+                          imgExpressionMan.push(clipartImg);
+                      }
+
+                      // Update the canvas once the images are loaded
+                      for (i = 0; i < numExpressionClipart; i++) {
+                          imgExpressionMan[i].onload = draw_canvas;
+                      }
+
+                      // Load the clip art images
+                      for (i = 0; i < numPoseClipart; i++) {
+                          var clipartImgY = new Image();
+                          clipartImgY.src = base_URL + imgPoseWomanNameY[i];
+                          imgPoseWomanY.push(clipartImgY);
+                          var clipartImgB = new Image();
+                          clipartImgB.src = base_URL + imgPoseWomanNameB[i];
+                          imgPoseWomanB.push(clipartImgB);
+                      }
+
+                      // Update the canvas once the images are loaded
+                      for (i = 0; i < numPoseClipart; i++) {
+                          imgPoseWomanY[i].onload = draw_canvas;
+                          imgPoseWomanB[i].onload = draw_canvas;
+                      }
+
+                      // Load the clip art images
+                      for (i = 0; i < numExpressionClipart; i++) {
+                          var clipartImg = new Image();
+                          clipartImg.src = base_URL + imgExpressionWomanName[i];
+                          imgExpressionWoman.push(clipartImg);
+                      }
+
+                      // Update the canvas once the images are loaded
+                      for (i = 0; i < numExpressionClipart; i++) {
+                          imgExpressionWoman[i].onload = draw_canvas;
+                      }
+                }
+              }
+            }
+
+            // draw canvas
+            function draw_canvas() {
+                //draw the image
+                setTimer = 0;
+                ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                draw_scene();
+                draw_options();
+            }
+            
+            function draw_canvas_timer() {
+              setTimer = 1;
+              ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+              draw_scene();
+              draw_options();
+            }
+            
+            function newDimensionsKeepAR(imgDims, maxDims) {
+              if ( (imgDims[0] > 0) & (imgDims[1] > 0) ) {
+                ratio = Math.min(maxDims[0]/imgDims[0], maxDims[1]/imgDims[1]);
+                newDims = [ ratio*imgDims[0], ratio*imgDims[1] ];
+              } else {
+                ratio = 1.0;
+                newDims = imgDims;
+              }
+              console.log(ratio)
+              console.log( newDims );
+              return newDims;
+            }
+
+            function draw_scene() {
+              if ( dispMode == 0 ) {
+                ctx.setTransform(1, 0, 0, 1, 0, 0); // SA: Gets rid of overwriting final expression in Options when person moved
+                ctx.clearRect(0, 0, canvas_fix.width, canvas_fix.height);
+                ctx.translate(-10,0);
+                ctx.fillStyle = 'white';
+
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.drawImage(img, CANVAS_COL, CANVAS_ROW, CANVAS_WIDTH, CANVAS_HEIGHT);    
+              }
+              else if ( dispMode == 1 ) {
+                ctx.setTransform(1, 0, 0, 1, 0, 0); // SA: Gets rid of overwriting final expression in Options when person moved
+                ctx.clearRect(0, 0, canvas_fix.width, canvas_fix.height);
+                ctx.translate(-10,0);
+                ctx.fillStyle = 'white';
+
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                newDims = newDimensionsKeepAR([img.width, img.height], [CANVAS_WIDTH, CANVAS_HEIGHT]);
+                ctx.drawImage(img, CANVAS_COL, CANVAS_ROW, newDims[0], newDims[1]);
+//                 ctx.drawImage(img, CANVAS_COL, CANVAS_ROW, CANVAS_WIDTH, CANVAS_HEIGHT);
+                if ( setTimer == 1 ) {
+                  timeToClipart = 2000;//1000*((Math.random()*1.5)+1.5); // in milliseconds between 1-3s
+                  console.log("Display length (ms): " + timeToClipart);
+                  setTimeout( switchToClipart, timeToClipart );
+                  setTimer = 0;
+                }
+              }
+              else {
+            
+                ctx.setTransform(1, 0, 0, 1, 0, 0); // SA: Gets rid of overwriting final expression in Options when person moved
+                ctx.translate(-10,0);
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, offsetCol - OPTIONS_BUFFER, canvas_fix.height);
+
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.drawImage(img, CANVAS_COL, CANVAS_ROW, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+                for (i = 0; i < numPoseClipart; i++) {
+                    var idx = renderOrder[i];
+                    var parent = parentMap[idx];
+                    var w = imgPosePersonA[idx].width;
+                    var h = imgPosePersonA[idx].height;
+                    rPosePersonA[idx] = r1PosePersonA[idx];
+
+                    if (parent >= 0) {
+                        var prevR = rPosePersonA[parent];
+                        if (personAFlip == 1) {
+                            var rotMatrix = [];
+                            rotMatrix.push(Math.cos(prevR));
+                            rotMatrix.push(-Math.sin(prevR));
+                            rotMatrix.push(Math.sin(prevR));
+                            rotMatrix.push(Math.cos(prevR));
+
+                            var wp = imgPosePersonA[parent].width;
+                            var x = (wp - x0PosePersonA[idx]) - (wp - x1PosePersonA[parent]);
+                            var y = y0PosePersonA[idx] - y1PosePersonA[parent];
+                            xPosePersonA[idx] = rotMatrix[0] * x + rotMatrix[1] * y + xPosePersonA[parent];
+                            yPosePersonA[idx] = rotMatrix[2] * x + rotMatrix[3] * y + yPosePersonA[parent];
+                            rPosePersonA[idx] = prevR - r1PosePersonA[idx];
+                        }
+                        else {
+                            var rotMatrix = [];
+                            rotMatrix.push(Math.cos(prevR));
+                            rotMatrix.push(-Math.sin(prevR));
+                            rotMatrix.push(Math.sin(prevR));
+                            rotMatrix.push(Math.cos(prevR));
+
+                            var x = x0PosePersonA[idx] - x1PosePersonA[parent];
+                            var y = y0PosePersonA[idx] - y1PosePersonA[parent];
+                            xPosePersonA[idx] = rotMatrix[0] * x + rotMatrix[1] * y + xPosePersonA[parent];
+                            yPosePersonA[idx] = rotMatrix[2] * x + rotMatrix[3] * y + yPosePersonA[parent];
+                            rPosePersonA[idx] = prevR + r1PosePersonA[idx];
+                        }
+                    }
+
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    if (personAFlip == 1) {
+                        ctx.setTransform(-1, 0, 0, 1, 0, 0);
+
+                        ctx.translate(-CANVAS_COL, CANVAS_ROW);
+                        ctx.scale(personScale, personScale);
+                        ctx.translate(-xPosePersonA[idx], yPosePersonA[idx]);
+                        ctx.rotate(-rPosePersonA[idx]);
+                        ctx.translate(-x1PosePersonA[idx], -y1PosePersonA[idx]);
+                    }
+                    else {
+                        ctx.translate(CANVAS_COL, CANVAS_ROW);
+                        ctx.scale(personScale, personScale);
+                        ctx.translate(xPosePersonA[idx], yPosePersonA[idx]);
+                        ctx.rotate(rPosePersonA[idx]);
+                        ctx.translate(-x1PosePersonA[idx], -y1PosePersonA[idx]);
+                    }
+
+                    if (idx == headIdx) {
+                        w = imgExpressionPersonA[personAExpression].width;
+                        h = imgExpressionPersonA[personAExpression].height;
+                        ctx.drawImage(imgExpressionPersonA[personAExpression], 0, 0, w, h, 0, 0, w, h);
+                    }
+                    else
+                        ctx.drawImage(imgPosePersonA[idx], 0, 0, w, h, 0, 0, w, h);
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+                }
+
+                for (i = 0; i < numPoseClipart; i++) {
+                    var idx = renderOrder[i];
+                    var parent = parentMap[idx];
+                    var w = imgPosePersonB[idx].width;
+                    var h = imgPosePersonB[idx].height;
+                    rPosePersonB[idx] = r1PosePersonB[idx];
+
+                    if (parent >= 0) {
+                        var prevR = rPosePersonB[parent];
+
+                        if (personBFlip == 1) {
+                            var rotMatrix = [];
+                            rotMatrix.push(Math.cos(prevR));
+                            rotMatrix.push(-Math.sin(prevR));
+                            rotMatrix.push(Math.sin(prevR));
+                            rotMatrix.push(Math.cos(prevR));
+
+                            var wp = imgPosePersonB[parent].width;
+                            var x = (wp - x0PosePersonB[idx]) - (wp - x1PosePersonB[parent]);
+                            var y = y0PosePersonB[idx] - y1PosePersonB[parent];
+                            xPosePersonB[idx] = rotMatrix[0] * x + rotMatrix[1] * y + xPosePersonB[parent];
+                            yPosePersonB[idx] = rotMatrix[2] * x + rotMatrix[3] * y + yPosePersonB[parent];
+                            rPosePersonB[idx] = prevR - r1PosePersonB[idx];
+                        }
+                        else {
+                            var rotMatrix = [];
+                            rotMatrix.push(Math.cos(prevR));
+                            rotMatrix.push(-Math.sin(prevR));
+                            rotMatrix.push(Math.sin(prevR));
+                            rotMatrix.push(Math.cos(prevR));
+
+                            var x = x0PosePersonB[idx] - x1PosePersonB[parent];
+                            var y = y0PosePersonB[idx] - y1PosePersonB[parent];
+                            xPosePersonB[idx] = rotMatrix[0] * x + rotMatrix[1] * y + xPosePersonB[parent];
+                            yPosePersonB[idx] = rotMatrix[2] * x + rotMatrix[3] * y + yPosePersonB[parent];
+                            rPosePersonB[idx] = prevR + r1PosePersonB[idx];
+                        }
+                    }
+
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    if (personBFlip == 1) {
+                        ctx.setTransform(-1, 0, 0, 1, 0, 0);
+
+                        ctx.translate(-CANVAS_COL, CANVAS_ROW);
+                        ctx.scale(personScale, personScale);
+                        ctx.translate(-xPosePersonB[idx], yPosePersonB[idx]);
+                        ctx.rotate(-rPosePersonB[idx]);
+                        ctx.translate(-x1PosePersonB[idx], -y1PosePersonB[idx]);
+                    }
+                    else {
+                        ctx.translate(CANVAS_COL, CANVAS_ROW);
+                        ctx.scale(personScale, personScale);
+                        ctx.translate(xPosePersonB[idx], yPosePersonB[idx]);
+                        ctx.rotate(rPosePersonB[idx]);
+                        ctx.translate(-x1PosePersonB[idx], -y1PosePersonB[idx]);
+                    }
+
+                    //   if(i == 0)
+                    if (idx == headIdx) {
+                        w = imgExpressionPersonB[personBExpression].width;
+                        h = imgExpressionPersonB[personBExpression].height;
+                        ctx.drawImage(imgExpressionPersonB[personBExpression], 0, 0, w, h, 0, 0, w, h);
+                    }
+                    else
+                        ctx.drawImage(imgPosePersonB[idx], 0, 0, w, h, 0, 0, w, h);
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+                }
+              }
+                
+            }
+
+            function draw_options() {
+              if ( dispMode == 0 ) {
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(CANVAS_COL + CANVAS_WIDTH + OPTIONS_BUFFER, CANVAS_ROW);
+                ctx.clearRect(OPTIONS_COL, OPTIONS_ROW, OPTIONS_WIDTH, OPTIONS_HEIGHT);
+              }
+              else if ( dispMode == 1 ) {
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(CANVAS_COL + CANVAS_WIDTH + OPTIONS_BUFFER, CANVAS_ROW);
+                ctx.clearRect(OPTIONS_COL, OPTIONS_ROW, OPTIONS_WIDTH, OPTIONS_HEIGHT);
+              }
+              else {
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(CANVAS_COL + CANVAS_WIDTH + OPTIONS_BUFFER, CANVAS_ROW);
+                ctx.drawImage(bgImg, 0, 0, OPTIONS_WIDTH, OPTIONS_HEIGHT, 0, 0, OPTIONS_WIDTH, OPTIONS_HEIGHT);
+
+                var w, h;
+                
+                // GENDER
+                // Gender Person A Select Icon
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(selectedImgXOffset + offsetCol + personAGender * (buttonSize + OPTIONS_BUFFER), flipRow + selectedImgYOffset);
+                ctx.scale(selectedImgXScale, selectedImgYScale);
+                w = selectedImg.width;
+                h = selectedImg.height;
+                ctx.drawImage(selectedImg, 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+
+                // Gender Person A Man Head
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(offsetCol, flipRow);
+                w = imgExpressionMan[personAExpression].width;
+                h = imgExpressionMan[personAExpression].height;
+                ctx.drawImage(imgExpressionMan[personAExpression], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+                
+                // Gender Person A Man Hair 
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(offsetCol, flipRow);
+                ctx.translate(imgManHairXOffset, imgManHairYOffset);
+                ctx.scale(imgManHairXScale, imgManHairYScale);
+                w = imgPoseManY[hairIdx].width;
+                h = imgPoseManY[hairIdx].height;
+                ctx.drawImage(imgPoseManY[hairIdx], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+                
+                // Gender Person A Woman Head
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate( (offsetCol + OPTIONS_BUFFER + buttonSize), (flipRow) );
+                w = imgExpressionWoman[personAExpression].width;
+                h = imgExpressionWoman[personAExpression].height;
+                ctx.drawImage(imgExpressionWoman[personAExpression], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+
+                // Gender Person A Woman Hair 
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate( (offsetCol + OPTIONS_BUFFER + buttonSize), (flipRow) );
+                ctx.translate(imgWomanHairXOffset, imgWomanHairYOffset);
+                ctx.scale(imgWomanHairXScale, imgWomanHairYScale);
+                w = imgPoseWomanY[hairIdx].width;
+                h = imgPoseWomanY[hairIdx].height;
+                ctx.drawImage(imgPoseWomanY[hairIdx], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+                
+                // Gender Person B Select Icon
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(selectedImgXOffset + offsetCol + personBGender * (buttonSize + OPTIONS_BUFFER), (flipRow + OPTIONS_BUFFER + buttonSize + selectedImgYOffset) );
+                ctx.scale(selectedImgXScale, selectedImgYScale);
+                w = selectedImg.width;
+                h = selectedImg.height;
+                ctx.drawImage(selectedImg, 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+
+                // Gender Person B Man Head
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate( (offsetCol), (flipRow + OPTIONS_BUFFER + buttonSize) );
+                w = imgExpressionMan[personBExpression].width;
+                h = imgExpressionMan[personBExpression].height;
+                ctx.drawImage(imgExpressionMan[personBExpression], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+
+                // Gender Person B Man Hair
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate( (offsetCol), (flipRow + OPTIONS_BUFFER + buttonSize) );
+                ctx.translate(imgManHairXOffset, imgManHairYOffset);
+                ctx.scale(imgManHairXScale, imgManHairYScale);
+                w = imgPoseManB[hairIdx].width;
+                h = imgPoseManB[hairIdx].height;
+                ctx.drawImage(imgPoseManB[hairIdx], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+                
+                // Gender Person B Woman Head 
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate( (offsetCol + OPTIONS_BUFFER + buttonSize), (flipRow + OPTIONS_BUFFER + buttonSize) );
+                w = imgExpressionWoman[personBExpression].width;
+                h = imgExpressionWoman[personBExpression].height;
+                ctx.drawImage(imgExpressionWoman[personBExpression], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+                
+                // Gender Person B Woman Hair 
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate( (offsetCol + OPTIONS_BUFFER + buttonSize), (flipRow + OPTIONS_BUFFER + buttonSize) );
+                ctx.translate(imgWomanHairXOffset, imgWomanHairYOffset);
+                ctx.scale(imgWomanHairXScale, imgWomanHairYScale);
+                w = imgPoseWomanB[hairIdx].width;
+                h = imgPoseWomanB[hairIdx].height;
+                ctx.drawImage(imgPoseWomanB[hairIdx], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+                
+                // FLIP
+                // Flip Person A Select Icon
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(flipCol + selectedImgXOffset+offsetCol + personAFlip * (buttonSize + OPTIONS_BUFFER), flipRow + selectedImgYOffset);
+                ctx.scale(selectedImgXScale, selectedImgYScale);
+                w = selectedImg.width;
+                h = selectedImg.height;
+                ctx.drawImage(selectedImg, 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+                
+                // Flip Person A Head
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(flipCol + offsetCol, flipRow);
+                w = imgExpressionPersonA[personAExpression].width;
+                h = imgExpressionPersonA[personAExpression].height;
+                ctx.drawImage(imgExpressionPersonA[personAExpression], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+                
+                // Flip Person A Hair
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(flipCol + offsetCol, flipRow);
+                ctx.translate(imgPersonAHairXOffset, imgPersonAHairYOffset);
+                ctx.scale(imgPersonAHairXScale, imgPersonAHairYScale);
+                w = imgPosePersonA[hairIdx].width;
+                h = imgPosePersonA[hairIdx].height;
+                ctx.drawImage(imgPosePersonA[hairIdx], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+
+                // Flip Person A Head Flipped
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.setTransform(-1, 0, 0, 1, 0, 0);
+                ctx.translate(-(flipCol + offsetCol + OPTIONS_BUFFER + 2 * buttonSize), flipRow);
+                w = imgExpressionPersonA[personAExpression].width;
+                h = imgExpressionPersonA[personAExpression].height;
+                ctx.drawImage(imgExpressionPersonA[personAExpression], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+
+                // Flip Person A Hair Flipped
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.setTransform(-1, 0, 0, 1, 0, 0);
+                ctx.translate(-(flipCol + offsetCol + OPTIONS_BUFFER + 2 * buttonSize), flipRow);
+                ctx.translate(imgPersonAHairXOffset, imgPersonAHairYOffset);
+                ctx.scale(imgPersonAHairXScale, imgPersonAHairYScale);
+                w = imgPosePersonA[hairIdx].width;
+                h = imgPosePersonA[hairIdx].height;
+                ctx.drawImage(imgPosePersonA[hairIdx], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+
+                // Flip Person B Select Icon
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(flipCol + selectedImgXOffset+offsetCol + personBFlip * (buttonSize + OPTIONS_BUFFER), flipRow + OPTIONS_BUFFER + buttonSize + selectedImgYOffset);
+                ctx.scale(selectedImgXScale, selectedImgYScale);
+                w = selectedImg.width;
+                h = selectedImg.height;
+                ctx.drawImage(selectedImg, 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+
+                // Flip Person B Head
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(flipCol + offsetCol, flipRow + OPTIONS_BUFFER + buttonSize);
+                w = imgExpressionPersonB[personBExpression].width;
+                h = imgExpressionPersonB[personBExpression].height;
+                ctx.drawImage(imgExpressionPersonB[personBExpression], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+                
+                // Flip Person B Hair
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(flipCol + offsetCol, flipRow + OPTIONS_BUFFER + buttonSize);
+                ctx.translate(imgPersonBHairXOffset, imgPersonBHairYOffset);
+                ctx.scale(imgPersonBHairXScale, imgPersonBHairYScale);
+                w = imgPosePersonB[hairIdx].width;
+                h = imgPosePersonB[hairIdx].height;
+                ctx.drawImage(imgPosePersonB[hairIdx], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+
+                // Flip Person B Head Flipped
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.setTransform(-1, 0, 0, 1, 0, 0);
+                ctx.translate(-(flipCol + offsetCol + OPTIONS_BUFFER + 2 * buttonSize), flipRow + OPTIONS_BUFFER + buttonSize);
+                w = imgExpressionPersonB[personBExpression].width;
+                h = imgExpressionPersonB[personBExpression].height;
+                ctx.drawImage(imgExpressionPersonB[personBExpression], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+
+                // Flip Person B Hair Flipped
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.setTransform(-1, 0, 0, 1, 0, 0);
+                ctx.translate(-(flipCol + offsetCol + OPTIONS_BUFFER + 2 * buttonSize), flipRow + OPTIONS_BUFFER + buttonSize);
+                ctx.translate(imgPersonBHairXOffset, imgPersonBHairYOffset);
+                ctx.scale(imgPersonBHairXScale, imgPersonBHairYScale);
+                w = imgPosePersonB[hairIdx].width;
+                h = imgPosePersonB[hairIdx].height;
+                ctx.drawImage(imgPosePersonB[hairIdx], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+
+                // EXPRESSION
+                // Expression Person A Select Icon
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(selectedImgXOffset+offsetCol + personAExpression * (buttonSize + OPTIONS_BUFFER), expressionRow + selectedImgYOffset);
+                ctx.scale(selectedImgXScale, selectedImgYScale);
+                w = selectedImg.width;
+                h = selectedImg.height;
+                ctx.drawImage(selectedImg, 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+
+                // Expression Person B Select Icon
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(selectedImgXOffset+offsetCol + personBExpression * (buttonSize + OPTIONS_BUFFER), expressionRow + OPTIONS_BUFFER + buttonSize + selectedImgYOffset);
+                ctx.scale(selectedImgXScale, selectedImgYScale);
+                w = selectedImg.width;
+                h = selectedImg.height;
+                ctx.drawImage(selectedImg, 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+
+                // Expression Person A All Heads
+                for (i = 0; i < numExpressionClipart; i++) {
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    ctx.translate(offsetCol + i * (OPTIONS_BUFFER + buttonSize), expressionRow);
+                    w = imgExpressionPersonA[i].width;
+                    h = imgExpressionPersonA[i].height;
+                    ctx.drawImage(imgExpressionPersonA[i], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+                    
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    ctx.translate(offsetCol + i * (OPTIONS_BUFFER + buttonSize), expressionRow);
+                    ctx.translate(imgPersonAHairXOffset, imgPersonAHairYOffset);
+                    ctx.scale(imgPersonAHairXScale, imgPersonAHairYScale);
+                    w = imgPosePersonA[hairIdx].width;
+                    h = imgPosePersonA[hairIdx].height;
+                    ctx.drawImage(imgPosePersonA[hairIdx], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+                }
+
+                // Expression Person B All Heads
+                for (i = 0; i < numExpressionClipart; i++) {
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    ctx.translate(offsetCol + i * (OPTIONS_BUFFER + buttonSize), expressionRow + OPTIONS_BUFFER + buttonSize);
+                    w = imgExpressionPersonB[i].width;
+                    h = imgExpressionPersonB[i].height;
+                    ctx.drawImage(imgExpressionPersonB[i], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+                    
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    ctx.translate(offsetCol + i * (OPTIONS_BUFFER + buttonSize), expressionRow + OPTIONS_BUFFER + buttonSize);
+                    ctx.translate(imgPersonBHairXOffset, imgPersonBHairYOffset);
+                    ctx.scale(imgPersonBHairXScale, imgPersonBHairYScale);
+                    w = imgPosePersonB[hairIdx].width;
+                    h = imgPosePersonB[hairIdx].height;
+                    ctx.drawImage(imgPosePersonB[hairIdx], 0, 0, w, h, 0, 0, buttonSize, buttonSize);
+                }
+              }
+
+            }
+
+            function mouseup_canvas(event) {
+                moveClipart = false;
+                buttonSelected = NOT_USED;
+
+                if (selectedIdx >= 0) {
+                    selectedIdx = NOT_USED;
+                    draw_canvas();
+                }
+            }
+
+            function mousedown_canvas(event) {
+            
+                var ev = event || window.event;
+
+                if (ev.pageX) cx = ev.pageX;
+                else if (ev.clientX)
+                    cx = ev.clientX + (document.documentElement.scrollLeft ?
+                document.documentElement.scrollLeft :
+                document.body.scrollLeft);
+
+                if (ev.pageY) cy = ev.pageY;
+                else if (ev.clientY)
+                    cy = ev.clientY + (document.documentElement.scrollTop ?
+                document.documentElement.scrollTop :
+                document.body.scrollTop);
+
+                var canvasX = cx - CANVAS_COL - canvas_fix.offsetLeft;
+                var canvasY = cy - CANVAS_ROW - canvas_fix.offsetTop;
+
+
+                // selectedIdx
+                for (i = 0; i < numPoseClipart; i++) {
+                    var idx = renderOrder[i];
+                    var w = imgPosePersonA[idx].width;
+                    var h = imgPosePersonA[idx].height;
+
+                    var x0 = canvasX / personScale - xPosePersonA[idx];
+                    var y0 = canvasY / personScale - yPosePersonA[idx];
+
+                    var rotMatrix = [];
+                    rotMatrix.push(Math.cos(-rPosePersonA[idx]));
+                    rotMatrix.push(-Math.sin(-rPosePersonA[idx]));
+                    rotMatrix.push(Math.sin(-rPosePersonA[idx]));
+                    rotMatrix.push(Math.cos(-rPosePersonA[idx]));
+
+                    var x1 = rotMatrix[0] * x0 + rotMatrix[1] * y0 + x1PosePersonA[idx];
+                    var y1 = rotMatrix[2] * x0 + rotMatrix[3] * y0 + y1PosePersonA[idx];
+
+                    if (x1 >= 0 && x1 < w && y1 >= 0 && y1 < h) {
+                        selectedIdx = selectMap[idx];
+                        personSelected = 0;
+                        clickX = canvasX;
+                        clickY = canvasY;
+                    }
+                }
+
+                for (i = 0; i < numPoseClipart; i++) {
+                    var idx = renderOrder[i];
+                    var w = imgPosePersonB[idx].width;
+                    var h = imgPosePersonB[idx].height;
+
+                    var x0 = canvasX / personScale - xPosePersonB[idx];
+                    var y0 = canvasY / personScale - yPosePersonB[idx];
+
+                    var rotMatrix = [];
+                    rotMatrix.push(Math.cos(-rPosePersonB[idx]));
+                    rotMatrix.push(-Math.sin(-rPosePersonB[idx]));
+                    rotMatrix.push(Math.sin(-rPosePersonB[idx]));
+                    rotMatrix.push(Math.cos(-rPosePersonB[idx]));
+
+                    var x1 = rotMatrix[0] * x0 + rotMatrix[1] * y0 + x1PosePersonB[idx];
+                    var y1 = rotMatrix[2] * x0 + rotMatrix[3] * y0 + y1PosePersonB[idx];
+
+                    if (x1 >= 0 && x1 < w && y1 >= 0 && y1 < h) {
+                        selectedIdx = selectMap[idx];
+                        personSelected = 1;
+                        clickX = canvasX;
+                        clickY = canvasY;
+                    }
+                }
+
+                if (selectedIdx == hairIdx)
+                    selectIdx = NOT_USED;
+
+                // Gender clicked
+                var x0 = canvasX - CANVAS_WIDTH - OPTIONS_BUFFER;
+                x0 /= OPTIONS_BUFFER + buttonSize;
+                x0 = Math.floor(x0);
+                var y0 = canvasY - flipRow + CANVAS_ROW;
+                y0 /= OPTIONS_BUFFER + buttonSize;
+                y0 = Math.floor(y0);
+
+                if (y0 == 0 && x0 >= 0 && x0 <= 1) {
+                    buttonSelected = 0;
+                    personAGender = x0;
+                    personAGenderChangeNum++;
+                    
+                    if ( personAGender == 0 ) {
+                      imgPersonAHairXOffset = imgManHairXOffset;
+                      imgPersonAHairYOffset = imgManHairYOffset;
+                      imgPersonAHairXScale = imgManHairXScale;
+                      imgPersonAHairYScale = imgManHairYScale;
+                      imgExpressionPersonA = imgExpressionMan;
+                      imgPosePersonA = imgPoseManY;
+                      
+                      x0PosePersonA = x0PoseMan;
+                      x1PosePersonA = x1PoseMan;
+                      y0PosePersonA = y0PoseMan;
+                      y1PosePersonA = y1PoseMan;
+                    }
+                    else {
+                      imgPersonAHairXOffset = imgWomanHairXOffset;
+                      imgPersonAHairYOffset = imgWomanHairYOffset;
+                      imgPersonAHairXScale = imgWomanHairXScale;
+                      imgPersonAHairYScale = imgWomanHairYScale;
+                      imgExpressionPersonA = imgExpressionWoman;
+                      imgPosePersonA = imgPoseWomanY;
+                      
+                      x0PosePersonA = x0PoseWoman;
+                      x1PosePersonA = x1PoseWoman;
+                      y0PosePersonA = y0PoseWoman;
+                      y1PosePersonA = y1PoseWoman;
+                    }
+                    
+                    draw_canvas();
+                }
+
+                if (y0 == 1 && x0 >= 0 && x0 <= 1) {
+                    buttonSelected = 1;
+                    personBGender = x0;
+                    personBGenderChangeNum++;
+                    
+                    if ( personBGender == 0 ) {
+                      imgPersonBHairXOffset = imgManHairXOffset;
+                      imgPersonBHairYOffset = imgManHairYOffset;
+                      imgPersonBHairXScale = imgManHairXScale;
+                      imgPersonBHairYScale = imgManHairYScale;
+                      imgExpressionPersonB = imgExpressionMan;
+                      imgPosePersonB = imgPoseManB;
+                      
+                      x0PosePersonB = x0PoseMan;
+                      x1PosePersonB = x1PoseMan;
+                      y0PosePersonB = y0PoseMan;
+                      y1PosePersonB = y1PoseMan;
+                    }
+                    else {
+                      imgPersonBHairXOffset = imgWomanHairXOffset;
+                      imgPersonBHairYOffset = imgWomanHairYOffset;
+                      imgPersonBHairXScale = imgWomanHairXScale;
+                      imgPersonBHairYScale = imgWomanHairYScale;
+                      imgExpressionPersonB = imgExpressionWoman; 
+                      imgPosePersonB = imgPoseWomanB;
+                      
+                      x0PosePersonB = x0PoseWoman;
+                      x1PosePersonB = x1PoseWoman;
+                      y0PosePersonB = y0PoseWoman;
+                      y1PosePersonB = y1PoseWoman;
+                    }
+                    draw_canvas();
+                }
+
+                // Flip clicked
+                ctx.translate(flipCol + selectedImgXOffset+offsetCol + personAFlip * (buttonSize + OPTIONS_BUFFER), flipRow + selectedImgYOffset);
+                var x0 = canvasX - CANVAS_WIDTH - OPTIONS_BUFFER - flipCol;
+                x0 /= OPTIONS_BUFFER + buttonSize;
+                x0 = Math.floor(x0);
+                var y0 = canvasY - flipRow + CANVAS_ROW;
+                y0 /= OPTIONS_BUFFER + buttonSize;
+                y0 = Math.floor(y0);
+
+                if (y0 == 0 && x0 >= 0 && x0 <= 1) {
+                    buttonSelected = 0;
+                    personAFlip = x0;
+                    personAFlipChangeNum++;
+                    draw_canvas();
+                }
+
+                if (y0 == 1 && x0 >= 0 && x0 <= 1) {
+                    buttonSelected = 1;
+                    personBFlip = x0;
+                    personBFlipChangeNum++;
+                    draw_canvas();
+                }
+                
+                // Expression clicked
+                var x0 = canvasX - CANVAS_WIDTH - OPTIONS_BUFFER;
+                x0 /= OPTIONS_BUFFER + buttonSize;
+                x0 = Math.floor(x0);
+                var y0 = canvasY - expressionRow + CANVAS_ROW;
+                y0 /= OPTIONS_BUFFER + buttonSize;
+                y0 = Math.floor(y0);
+
+                if (y0 == 0 && x0 >= 0 && x0 < numExpressionClipart) {
+                    buttonSelected = 2;
+                    personAExpression = x0;
+                    personAExpressionChangeNum++;
+                }
+
+                if (y0 == 1 && x0 >= 0 && x0 < numExpressionClipart) {
+                    buttonSelected = 3;
+                    personBExpression = x0;
+                    personBExpressionChangeNum++;
+                }
+
+                draw_canvas();
+
+                var clipart_pressed = false;
+            }
+
+            //update the current location of the keypoint
+            function mousemove_canvas(event) {
+                                
+                var ev = event || window.event;
+
+                if (ev.pageX) cx = ev.pageX;
+                else if (ev.clientX)
+                    cx = ev.clientX + (document.documentElement.scrollLeft ?
+                document.documentElement.scrollLeft :
+                document.body.scrollLeft);
+
+                if (ev.pageY) cy = ev.pageY;
+                else if (ev.clientY)
+                    cy = ev.clientY + (document.documentElement.scrollTop ?
+                document.documentElement.scrollTop :
+                document.body.scrollTop);
+
+                var canvasX = cx - CANVAS_COL - canvas_fix.offsetLeft;
+                var canvasY = cy - CANVAS_ROW - canvas_fix.offsetTop;
+
+                // Clipart people move-clicked
+                if (selectedIdx != NOT_USED && personSelected == 0) {
+                    
+                    personAPoseMoved[selectedIdx]++;
+                    
+                    if (selectedIdx == 0) {    
+                        if(canvasX / personScale > 200 && canvasX / personScale < 1000)
+                            xPosePersonA[selectedIdx] += canvasX / personScale - clickX / personScale;
+                        if (canvasY / personScale > 200 && canvasY / personScale < 600)
+                            yPosePersonA[selectedIdx] += canvasY / personScale - clickY / personScale;
+                    }
+                    
+                    if (selectedIdx == 13) {
+                        var x0 = canvasX / personScale - xPosePersonA[0];
+                        var y0 = canvasY / personScale - yPosePersonA[0];
+
+                        r1PosePersonA[0] = Math.atan2(x0, -y0);
+                    }
+
+                    if (selectedIdx != 0 && selectedIdx != 13) {
+                        var x0 = canvasX / personScale - xPosePersonA[selectedIdx];
+                        var y0 = canvasY / personScale - yPosePersonA[selectedIdx];
+
+                        if (personAFlip == 1) {
+                            r1PosePersonA[selectedIdx] = -Math.atan2(-x0, y0);
+
+                            if (parentMap[selectedIdx] >= 0)
+                                r1PosePersonA[selectedIdx] += rPosePersonA[parentMap[selectedIdx]];
+                        }
+                        else {
+                            r1PosePersonA[selectedIdx] = Math.atan2(-x0, y0);
+
+                            if (parentMap[selectedIdx] >= 0)
+                                r1PosePersonA[selectedIdx] -= rPosePersonA[parentMap[selectedIdx]];
+                        }
+                    }
+
+                    draw_scene();
+                    clickX = canvasX;
+                    clickY = canvasY;
+                }
+
+                if (selectedIdx != NOT_USED && personSelected == 1) {
+                    
+                    personBPoseMoved[selectedIdx]++;
+                    
+                    if (selectedIdx == 0) {
+                        if (canvasX / personScale > 200 && canvasX / personScale < 1000)
+                            xPosePersonB[selectedIdx] += canvasX / personScale - clickX / personScale;
+                        if (canvasY / personScale > 200 && canvasY / personScale < 600)
+                            yPosePersonB[selectedIdx] += canvasY / personScale - clickY / personScale;
+                    }
+                    
+                    if (selectedIdx == 13) {
+                        var x0 = canvasX / personScale - xPosePersonB[0];
+                        var y0 = canvasY / personScale - yPosePersonB[0];
+
+                        r1PosePersonB[0] = Math.atan2(x0, -y0);
+                    }
+
+                    if (selectedIdx != 0 && selectedIdx != 13) {
+                        var x0 = canvasX / personScale - xPosePersonB[selectedIdx];
+                        var y0 = canvasY / personScale - yPosePersonB[selectedIdx];
+
+                        if (personBFlip == 1) {
+                            r1PosePersonB[selectedIdx] = -Math.atan2(-x0, y0);
+
+                            if (parentMap[selectedIdx] >= 0)
+                                r1PosePersonB[selectedIdx] += rPosePersonB[parentMap[selectedIdx]];
+                        }
+                        else {
+                            r1PosePersonB[selectedIdx] = Math.atan2(-x0, y0);
+
+                            if (parentMap[selectedIdx] >= 0)
+                                r1PosePersonB[selectedIdx] -= rPosePersonB[parentMap[selectedIdx]];
+                        }
+                    }
+
+                    draw_scene();
+                    clickX = canvasX;
+                    clickY = canvasY;
+                }
+
+                // Gender move-clicked
+                var x0 = canvasX - CANVAS_WIDTH - OPTIONS_BUFFER;
+                x0 /= OPTIONS_BUFFER + buttonSize;
+                x0 = Math.floor(x0);
+                var y0 = canvasY - flipRow + CANVAS_ROW;
+                y0 /= OPTIONS_BUFFER + buttonSize;
+                y0 = Math.floor(y0);
+
+                if (buttonSelected == 0 && y0 == 0 && x0 >= 0 && x0 <= 1) {
+                    personAGender = x0;
+                    personAGenderChangeNum++;
+                    
+                    if ( personAGender == 0 ) {
+                      imgPersonAHairXOffset = imgManHairXOffset;
+                      imgPersonAHairYOffset = imgManHairYOffset;
+                      imgPersonAHairXScale = imgManHairXScale;
+                      imgPersonAHairYScale = imgManHairYScale;
+                      imgExpressionPersonA = imgExpressionMan;
+                      imgPosePersonA = imgPoseManY;
+                      
+                      x0PosePersonA = x0PoseMan;
+                      x1PosePersonA = x1PoseMan;
+                      y0PosePersonA = y0PoseMan;
+                      y1PosePersonA = y1PoseMan;
+                    }
+                    else {
+                      imgPersonAHairXOffset = imgWomanHairXOffset;
+                      imgPersonAHairYOffset = imgWomanHairYOffset;
+                      imgPersonAHairXScale = imgWomanHairXScale;
+                      imgPersonAHairYScale = imgWomanHairYScale;
+                      imgExpressionPersonA = imgExpressionWoman;
+                      imgPosePersonA = imgPoseWomanY;
+                      
+                      x0PosePersonA = x0PoseWoman;
+                      x1PosePersonA = x1PoseWoman;
+                      y0PosePersonA = y0PoseWoman;
+                      y1PosePersonA = y1PoseWoman;
+                    }
+                    draw_canvas();
+                }
+
+                if (buttonSelected == 1 && y0 == 1 && x0 >= 0 && x0 <= 1) {
+                    personBGender = x0;
+                    personBGenderChangeNum++;
+                    
+                    if ( personBGender == 0 ) {
+                      imgPersonBHairXOffset = imgManHairXOffset;
+                      imgPersonBHairYOffset = imgManHairYOffset;
+                      imgPersonBHairXScale = imgManHairXScale;
+                      imgPersonBHairYScale = imgManHairYScale;
+                      imgExpressionPersonB = imgExpressionMan;
+                      imgPosePersonB = imgPoseManB;
+                      
+                      x0PosePersonB = x0PoseMan;
+                      x1PosePersonB = x1PoseMan;
+                      y0PosePersonB = y0PoseMan;
+                      y1PosePersonB = y1PoseMan;
+                    }
+                    else {
+                      imgPersonBHairXOffset = imgWomanHairXOffset;
+                      imgPersonBHairYOffset = imgWomanHairYOffset;
+                      imgPersonBHairXScale = imgWomanHairXScale;
+                      imgPersonBHairYScale = imgWomanHairYScale;
+                      imgExpressionPersonB = imgExpressionWoman; 
+                      imgPosePersonB = imgPoseWomanB;
+                      
+                      x0PosePersonB = x0PoseWoman;
+                      x1PosePersonB = x1PoseWoman;
+                      y0PosePersonB = y0PoseWoman;
+                      y1PosePersonB = y1PoseWoman;
+                    }
+                    draw_canvas();
+                }
+                
+                // Flip move-clicked
+                var x0 = canvasX - CANVAS_WIDTH - OPTIONS_BUFFER - flipCol;
+                x0 /= OPTIONS_BUFFER + buttonSize;
+                x0 = Math.floor(x0);
+                var y0 = canvasY - flipRow + CANVAS_ROW;
+                y0 /= OPTIONS_BUFFER + buttonSize;
+                y0 = Math.floor(y0);
+
+                if (buttonSelected == 0 && y0 == 0 && x0 >= 0 && x0 <= 1) {
+                    personAFlip = x0;
+                    personAFlipChangeNum++;
+                    draw_canvas();
+                }
+
+                if (buttonSelected == 1 && y0 == 1 && x0 >= 0 && x0 <= 1) {
+                    personBFlip = x0;
+                    personBFlipChangeNum++;
+                    draw_canvas();
+                }
+
+                // Expressions move-clicked
+                var x0 = canvasX - CANVAS_WIDTH - OPTIONS_BUFFER;
+                x0 /= OPTIONS_BUFFER + buttonSize;
+                x0 = Math.floor(x0);
+                var y0 = canvasY - expressionRow + CANVAS_ROW;
+                y0 /= OPTIONS_BUFFER + buttonSize;
+                y0 = Math.floor(y0);
+
+                if (buttonSelected == 2 && y0 == 0 && x0 >= 0 && x0 < numExpressionClipart) {
+                    personAExpression = x0;
+                    personAExpressionChangeNum++;
+                    draw_canvas();
+                }
+
+                if (buttonSelected == 3 && y0 == 1 && x0 >= 0 && x0 < numExpressionClipart) {
+                    personBExpression = x0;
+                    personBExpressionChangeNum++;
+                    draw_canvas();
+                }
+
+            }
+        // end of javascript
+        </script>
+        <style type="text/css"></style><style type="text/css"></style></head>
+        <body onload="init();">
+        <div align="left" id="header1"><h2 style="color:black">Let's play a game!</h2></div>
+        <div align="left" id="header2"><h4 style="color:red">Note: You can now choose the genders of the two people!</h4></div>
+        <div align="left" id="instructions" style="margin-right:22%" style="color:black" > 
+                
+            <p> <img src="./pngs/DirectionsMan.png" alt="Instruction_Illustration" style="float:right" width="210" height="300"/>
+            
+                We're going to be playing a pictionary-like game.
+                Your task is to create a clipart image based on a real image that we show you.
+                Your clipart image will then be given to your partner.
+                With only your clipart image in hand, your partner's task is to identify the image that we showed you out of a collection of several similar/related images.
+            <br><br>
+                We will show you a real image for <b>2 seconds</b> (so be alert).
+                It will have 2 main people interacting with each other in some way.
+                Then the clipart interface will appear.
+                This interface will also have two people in it. 
+                Please change the pose, orientation, position, gender, and expression of the people
+                to re-create the real image <font color="FF0000"><b>as accurately as possible</b></font>.
+                The more accurate your re-created image, the easier it will be for your partner to find the correct image.
+                <font color="0000FF"><b>Note that there is no background, you cannot add objects, you cannot change the size of the people, you cannot change the overlap of body parts, etc. 
+                So, for instance, please ignore the sizes of the two (clipart) people, such as when there is a child in the real image.
+                Your partner is also aware of these limitations,
+                so you should focus your efforts on re-creating the specific interactions between the two people via the poses, genders, and expressions with respect to each other.
+                </b></font>
+                <font color="FF0000"><b>Please DO NOT ignore the gender of the two people and try to match them to the real image.
+                </b></font>
+            <br><br>   
+                Before you proceed, you can play around with the clipart interface below.
+                The buttons on the right side of the interface may be used to change a person's gender, flip a person horizontally (i.e., look the other way), and to change their expression. 
+                A person's position in the image may be changed by dragging their torso and their torso orientation/angle may be changed by dragging their head. 
+                The position of a person's arms and legs may be changed by dragging them. A diagram of how to change a person's pose is shown on the right.
+                For example, if you want to make a person bending over to pick something up on the right side of the screen, 
+                you can first click on his torso and drag him to the right side, then you can rotate his body/torso to be horizontal by dragging his head, followed by 
+                dragging both of his legs to angle them so they are vertical, and finally positioning his arms correctly.
+            <br><br>
+                Created clipart scenes that do not <b>reasonably</b> emulate the displayed images will be rejected.
+            <br><br>
+                Thanks for your great work!
+            <div style="clear:both;"></div>
+        </div>
+                                            
+        <div align="left" id="counter" style="background-color:lightblue"><h2 style="color:black">Press 'Go To Task' to proceed to the next page.</h2></div>
+        <div align="center" id="taskDiv"><input id="taskButton" type="button" name="TaskB" value="Go To Task" onclick="goToTask()"></div>
+        <div align="center" id="showDiv"><input id="showButton" type="button" name="ShowB" value="Show Image" onclick="startIntf()"></div>
+        
+        <div align="center">
+            <table width="420"> 
+                <tbody><tr align="center"><td>
+                    <form id="mturk_form" method="POST" action="https://www.mturk.com/mturk/externalSubmit">
+                        <input type="hidden" id="assignmentId" name="assignmentId" value="">
+                        <input type="hidden" id="HITComment" name="comments" value="">
+                        <div id="comment_title" style="display:none"><p>Comments are welcome!</p> </div>
+                        <p><textarea type="hidden" id="comment" rows="3" cols="40" style="display:none"></textarea></p>
+                        <input id="submitButton" type="hidden" name="Submit" value="Done" onclick="submitResults()">
+                    </form>
+                </td></tr></tbody>
+            </table>
+        </div>
+        
+        <div id="canvas" style="text-align:left;" class="xlink"><canvas id="scene_canvas" width="1140" height="420"></canvas></div>
+        
+        <div align="center" id="howHardDiv" style="display:inline">
+          <form id="radio_form" method="POST">
+          <div id="radio_title" style="display:inline">
+          <p>How hard was it to create the clipart image as you intended it to be?
+          <br>(With '1' being very easy and '5' being very difficult.)</p> </div>
+          <input type="radio" name="group1" id="r1" value="1" /><label for="r1"> 1 </label>
+          <input type="radio" name="group1" id="r2" value="2" /><label for="r2"> 2 </label>
+          <input type="radio" name="group1" id="r3" value="3" /><label for="r3"> 3 </label>
+          <input type="radio" name="group1" id="r3" value="4" /><label for="r4"> 4 </label>
+          <input type="radio" name="group1" id="r3" value="5" /><label for="r5"> 5 </label>
+          </form>
+        </div>
+        <br>
+        <div align="center" id="nextDiv"><input id="nextButton" type="button" name="Next" value="Next" onclick="next()"></div>
+        
+        <script type="text/javascript">
+            document.getElementById('assignmentId').value = gup('assignmentId');
+            //
+            // Check if the worker is PREVIEWING the HIT or if they've ACCEPTED the HIT
+            //
+            if (gup('assignmentId') == "ASSIGNMENT_ID_NOT_AVAILABLE") {
+                // If we're previewing, disable the button and give it a helpful message
+                document.getElementById('taskButton').disabled = true;
+                document.getElementById('taskButton').value = "You must ACCEPT the HIT before you can start the real task.";
+            } else {
+                var form = document.getElementById('mturk_form');
+                if (document.referrer && (document.referrer.indexOf('workersandbox') != -1)) {
+                    form.action = "https://workersandbox.mturk.com/mturk/externalSubmit";
+                }
+            }
+        </script>
+    </body>
+</html>
